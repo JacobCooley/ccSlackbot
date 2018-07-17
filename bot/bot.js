@@ -5,9 +5,10 @@ import {
     baseUrl,
     coinString,
     channel,
-    priceCheckText,
+    startListening,
     chartTimeFrame,
     chartString,
+    help,
     positiveInsane,
     positiveHigh,
     positiveMed,
@@ -19,6 +20,7 @@ import {
     negativeLow,
     negativeTiny,
     botToken,
+    precision,
     oathToken
 } from '../config/constants'
 
@@ -32,7 +34,7 @@ const params = {
 }
 
 const bot = new Bot(settings)
-let channelId
+let channelId, emojiList
 
 bot.on('start', (data) => {
     setCorrectChannel()
@@ -40,35 +42,53 @@ bot.on('start', (data) => {
 })
 
 bot.on('message', (data) => {
-    console.log('data', data)
-    if (data && data.text && (data.username || data.username !== botName) && data.channel && data.channel === channelId) {
+    console.log(data)
+    if (data && data.text && data.user && data.channel && data.channel === channelId) {
         const textData = data.text
-        console.log('textData', textData)
-        if (textData.substr(0, 2).toLowerCase() === priceCheckText && textData.substr(2, 1) === ' ') {
-            if (textData.substr(3, 5).toLowerCase() === 'chart') {
-                bot.postMessage(channel, 'chart', params)
-            }
-            else {
-                textData.substr(3).trim().split(',').forEach((coin) => {
-                    Promise.resolve(Api.getCoin(baseUrl + coinString + coin.trim().toUpperCase())).then((response) => {
-                        const data = response.data
-                        bot.postMessage(channel, formatSlackPost(data), params)
-                    })
-                })
+        const commands = textData.split(" ")
+        if (commands[0] === startListening) {
+            switch (commands[1]){
+                case 'help':
+                    showHelp()
+                    break
+                case 'chart':
+                    showChart()
+                    break
+                default:
+                    const coins = textData.substr(commands[0].length, textData.length)
+                    showCoin(coins)
             }
         }
     }
 })
 
+const showCoin = (textData) => {
+    textData.trim().split(',').forEach((coin) => {
+        Promise.resolve(Api.getCall(baseUrl + coinString + coin.trim().toUpperCase())).then((response) => {
+            const data = response.data
+            bot.postMessage(channel, formatSlackPost(data), params)
+        })
+    })}
+
+const showChart = async () => {
+    bot.postMessage(channel, 'chart', params)
+}
+
+const showHelp = () => {
+    bot.postMessage(channel, help, params)
+}
+
 const formatSlackPost = (data) => {
+    console.log('data',data)
     const symbol = data.id
-    const priceFiat = data.price_usd.toFixed(2)
-    const priceBtc = data.price_btc.toFixed(8)
-    const perc = Number.parseFloat(data.cap24hrChange).toFixed(2)
-    const chart = perc > 75 ? positiveInsane : perc > 50 ? positiveHigh : perc > 25 ? positiveMed : perc > 10 ?
-        positiveLow : perc > 0 ? positiveTiny : perc < -75 ? negativeInsane : perc < -50 ? negativeHigh : perc < -25 ?
+    const coinImage = emojiList && data.id.toLowerCase() in emojiList ? data.id : 'coincap'
+    const priceFiat = data.price.toFixed(2)
+    const priceBtc = data.price_btc ? data.price_btc.toFixed(precision) : data.btcPrice ? parseFloat(data.price / data.btcPrice).toFixed(precision) : 0
+    const perc = parseFloat(data.cap24hrChange).toFixed(2)
+    const chart = perc > 70 ? positiveInsane : perc > 40 ? positiveHigh : perc > 25 ? positiveMed : perc > 10 ?
+        positiveLow : perc > 0 ? positiveTiny : perc < -70 ? negativeInsane : perc < -40 ? negativeHigh : perc < -25 ?
             negativeMed : perc < -10 ? negativeLow : negativeTiny
-    return `${symbol} :${symbol}: $${priceFiat} :BTC: ${priceBtc} ${chart} ${perc}%`
+    return `${symbol} :${coinImage}: $${priceFiat} :BTC: ${priceBtc} ${chart} ${perc}%`
 }
 
 const setCorrectChannel = () => {
@@ -83,6 +103,10 @@ const setCorrectChannel = () => {
     })
 }
 
-const
+const getEmojiList = () => {
+    Promise.resolve(Api.getCall(`https://slack.com/api/emoji.list?token=${oathToken}&pretty=1`)).then((response) => {
+        emojiList = response.data.emoji
+    })
+}
 
 export default bot

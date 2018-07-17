@@ -1,11 +1,11 @@
 const axios = require('axios')
 
-export async function getCoin(url) {
-        try {
-            return await axios.get(url)
-        } catch (error) {
-            console.log('ERROR', error)
-        }
+export async function getCall(url) {
+    try {
+        return await axios.get(url)
+    } catch (error) {
+        console.log('ERROR', error)
+    }
 }
 
 // export async function getChart(bot, url) {
