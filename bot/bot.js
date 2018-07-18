@@ -1,5 +1,8 @@
 const Bot = require('slackbots')
-import * as Api from './api'
+const fs = require('fs')
+const request = require('request-promise')
+import {buildChart} from './chart'
+
 import {
     botName,
     baseUrl,
@@ -20,10 +23,13 @@ import {
     negativeLow,
     negativeTiny,
     frontPage,
-    botToken,
     precision,
-    oathToken
 } from '../config/constants'
+
+import {
+    botToken,
+    oathToken
+} from '../config/secrets'
 
 const settings = {
     token: botToken,
@@ -43,7 +49,6 @@ bot.on('start', (data) => {
 })
 
 bot.on('message', (data) => {
-    console.log('message received')
     if (data && data.text && data.user && data.channel && data.channel === channelId) {
         const textData = data.text
         const commands = textData.split(" ")
@@ -53,7 +58,10 @@ bot.on('message', (data) => {
                     showHelp()
                     break
                 case 'chart':
-                    showChart(commands)
+                    showChart(commands[2], commands[3])
+                    break
+                case 'sean':
+                    showImage(commands[1], 'png')
                     break
                 default:
                     const coins = textData.substr(commands[0].length, textData.length)
@@ -63,47 +71,53 @@ bot.on('message', (data) => {
     }
 })
 
-const showCoin = (textData) => {
-    Api.getCall(baseUrl + frontPage).then((response) => {
-        const data = response.data
-        let percentageCoin
-        const coinArray = textData.trim().split(',')
-        const split = coinArray[coinArray.length - 1].trim().split(' ')
-        const btcPrice = data.find(coin => coin.short.toLowerCase() === 'btc').price
-        if (split[1] === 'in') {
-            console.log(split)
-            const secondCoin = split[2] ? split[2] : 'btc'
-            coinArray[coinArray.length - 1] = split[0]
-            percentageCoin = data.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
-        }
-        const filteredCoinArray = coinArray.filter((value, index, self) => {
-            return self.indexOf(value.trim()) === index
-        });
-        console.log('made it')
-        filteredCoinArray.forEach((coinName) => {
-            console.log('coinname',coinName)
-            const coin = data.find((responseCoin) => {
-                return coinName.toLowerCase() === responseCoin.short.toLowerCase()
-            })
-            bot.postMessage(channel, formatSlackPost(coin, percentageCoin, btcPrice), params)
-        })
-    })
+const showChart = async (coin, time) => {
+    console.log('coin', coin)
+    console.log('time', time)
+    const response = await request.get(baseUrl + chartPage + coin.toUpperCase()).catch(err => new Error(err))
+    const data = JSON.parse(response)
+    const marketCapGraph = data.market_cap
+    const priceGraph = data.price
+    const chartBuilt = await buildChart(priceGraph, marketCapGraph)
+    console.log('chart', chartBuilt)
+    showImage('chart', 'jpg')
 }
 
-const showChart = async (commands) => {
-    const coin = commands[2].toUpperCase()
-    Api.getCall(baseUrl + chartPage + coin).then((response) => {
-        const data = response.data
-        const marketCapGraph = response.data.market_cap
-        const priceGraph = response.data.price
-        // if(coin !== 'BTC' && btcPrice) {
-        //     const btcGraph = response.data.price.map((graphPoint) => {
-        //         return [graphPoint[0], graphPoint[1] / btcPrice]
-        //     })
-        //     console.log(btcGraph)
-        // }
+const showImage = async (name, ext) => {
+    const options = {
+        method: 'POST',
+        url: 'https://slack.com/api/files.upload',
+        formData: {
+            token: botToken,
+            channels: channel,
+            file: fs.createReadStream(`${__dirname}/images/${name}.${ext}`),
+            filename: `${name}.${ext}`,
+            filetype: `${ext}`
+        }
+    }
+    return request(options).catch(err => console.error(new Error(err)))
+}
+
+const showCoin = async (textData) => {
+    const response = await request.get(baseUrl + frontPage).catch(err => console.log('Error', err))
+    const data = JSON.parse(response)
+    let percentageCoin
+    const coinArray = textData.trim().split(',')
+    const split = coinArray[coinArray.length - 1].trim().split(' ')
+    const btcPrice = data.find(coin => (coin.short.toLowerCase() === 'btc')).price
+    if (split[1] === 'in') {
+        const secondCoin = split[2] ? split[2] : 'btc'
+        coinArray[coinArray.length - 1] = split[0]
+        percentageCoin = data.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
+    }
+    const filteredCoinArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
+    filteredCoinArray.forEach((coinName) => {
+        data.find((responseCoin) => {
+            if (responseCoin && responseCoin.short && coinName.trim().toLowerCase() === responseCoin.short.toLowerCase()) {
+                return bot.postMessage(channel, formatSlackPost(responseCoin, percentageCoin, btcPrice), params)
+            }
+        })
     })
-    bot.postMessage(channel, 'chart', params)
 }
 
 const showHelp = () => {
@@ -111,19 +125,18 @@ const showHelp = () => {
 }
 
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
-    console.log('formatting', coin)
     const symbol = coin.short
     const coinImage = emojiList && coin.short.toLowerCase() in emojiList ? coin.short : 'coincap'
     const coinComparedImage = emojiList && percentageCoin && percentageCoin.short.toLowerCase() in emojiList ? percentageCoin.short : percentageCoin ? 'coincap' : 'btc'
     const priceFiat = coin.price.toFixed(2)
     const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
     const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
-    const chart = getPercentageChart(perc)
+    const chart = getPercentageImage(perc)
     return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${chart} ${perc}%`
 }
 
 const setCorrectChannel = () => {
-    Promise.resolve(bot.getChannels()).then((channelList) => {
+    bot.getChannels().then((channelList) => {
         for (let channelInArray of channelList.channels) {
             if (channelInArray.name === channel) {
                 channelId = channelInArray.id
@@ -133,13 +146,12 @@ const setCorrectChannel = () => {
     })
 }
 
-const getEmojiList = () => {
-    Promise.resolve(Api.getCall(`https://slack.com/api/emoji.list?token=${oathToken}&pretty=1`)).then((response) => {
-        emojiList = response.data.emoji
-    })
+const getEmojiList = async () => {
+    const response = await request.get(`https://slack.com/api/emoji.list?token=${oathToken}`).catch(err => console.log(new Error(err)))
+    emojiList = JSON.parse(response).emoji
 }
 
-const getPercentageChart = (perc) => {
+const getPercentageImage = (perc) => {
     return perc > 40 ? positiveInsane : perc > 30 ? positiveHigh : perc > 20 ? positiveMed : perc > 10 ?
         positiveLow : perc >= 0 ? positiveTiny : perc < -40 ? negativeInsane : perc < -30 ? negativeHigh : perc < -20 ?
             negativeMed : perc < -10 ? negativeLow : negativeTiny
