@@ -5,8 +5,6 @@ import {buildChart} from './chart'
 import {
     botName,
     baseUrl,
-    coinPage,
-    channel,
     startListening,
     chartTimeFrame,
     chartPage,
@@ -29,10 +27,12 @@ const aws = require('aws-sdk');
 
 let s3 = new aws.S3({
     botToken: process.env.slackBotCCToken,
-    oauthToken: process.env.slackBotCCOauth
+    oauthToken: process.env.slackBotCCOauth,
+    channel: process.env.slackBotChannel
 })
 const botToken = s3.config.botToken
 const oathToken = s3.config.oauthToken
+const channel = s3.config.channel
 const params = {
     icon_emoji: ':ideas_by_nature:'
 }
@@ -41,9 +41,11 @@ const bot = new Bot({
     token: botToken,
     name: botName
 })
-let channelId, emojiList, btcPrice
+let channelId, emojiList, coinData
 
 bot.on('start', (data) => {
+    getFrontPage()
+    setFrontPageInterval()
     setCorrectChannel()
     getEmojiList()
     console.log("Bot started")
@@ -54,7 +56,7 @@ bot.on('message', (data) => {
     if (data && data.text && data.user && data.channel && data.channel === channelId) {
         const textData = data.text
         const commands = textData.split(" ")
-        if (commands[0] === startListening) {
+        if (commands[0].toLowerCase() === startListening) {
             switch (commands[1]) {
                 case 'help':
                     showHelp()
@@ -100,26 +102,35 @@ const showImage = async (name, ext) => {
     return request(options).catch(err => console.error(new Error(err)))
 }
 
-const showCoin = async (textData) => {
-    const response = await request.get(baseUrl + frontPage).catch(err => console.log('Error', err))
-    const data = JSON.parse(response)
+const showCoin = (textData) => {
     let percentageCoin
     const coinArray = textData.trim().split(',')
     const split = coinArray[coinArray.length - 1].trim().split(' ')
-    const btcPrice = data.find(coin => (coin.short.toLowerCase() === 'btc')).price
+    const btcPrice = coinData.find(coin => (coin.short.toLowerCase() === 'btc')).price
     if (split[1] === 'in') {
         const secondCoin = split[2] ? split[2] : 'btc'
         coinArray[coinArray.length - 1] = split[0]
-        percentageCoin = data.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
+        percentageCoin = coinData.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
     }
     const filteredCoinArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
     filteredCoinArray.forEach((coinName) => {
-        data.find((responseCoin) => {
+        coinData.find((responseCoin) => {
             if (responseCoin && responseCoin.short && coinName.trim().toLowerCase() === responseCoin.short.toLowerCase()) {
                 return bot.postMessage(channel, formatSlackPost(responseCoin, percentageCoin, btcPrice), params)
             }
         })
     })
+}
+
+const getFrontPage = async () => {
+    const response = await request.get(baseUrl + frontPage).catch(err => console.log('Error', err))
+    coinData = JSON.parse(response)
+}
+
+const setFrontPageInterval = () => {
+    setInterval(() => {
+        getFrontPage()
+    }, 30000)
 }
 
 const showHelp = () => {
