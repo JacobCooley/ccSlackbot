@@ -56,38 +56,60 @@ bot.on('message', (data) => {
     if (data && data.text && data.user && data.channel && data.channel === channelId) {
         const textData = data.text
         const commands = textData.split(" ")
-        if (commands[0].toLowerCase() === startListening) {
-            switch (commands[1]) {
-                case 'help':
+        const listenerString = commands.shift()
+        if (listenerString.toLowerCase() === startListening) {
+            const action = commands[0]
+            switch (action) {
+                case true:
                     showHelp()
                     break
                 case 'chart':
-                    showChart(commands[2], commands[3])
+                    showChart(commands[1], commands[2])
                     break
-                case 'sean':
-                    showImage(commands[1], 'png')
+                case isMeme(commands):
+                    showImage(commands.join(' '), 'png')
                     break
                 default:
-                    const coins = textData.substr(commands[0].length, textData.length)
+                    console.log('made it')
+                    const coins = textData.substr(listenerString.length, textData.length)
                     showCoin(coins)
             }
         }
     }
 })
 
+const isMeme = (commands) => {
+    console.log('comm', commands)
+    const memeString = commands.join(' ')
+    const action = commands[0]
+    console.log('memeString', memeString)
+
+    switch (memeString.toLowerCase()){
+        case 'sean':
+            return action
+            break
+        case 'vincent margera':
+            return action
+            break
+        case 'maybe':
+            return action
+            break
+        default:
+            return false
+    }
+}
+
 const showChart = async (coin, time) => {
-    console.log('coin', coin)
-    console.log('time', time)
     const response = await request.get(baseUrl + chartPage + coin.toUpperCase()).catch(err => new Error(err))
     const data = JSON.parse(response)
     const marketCapGraph = data.market_cap
     const priceGraph = data.price
     const chartBuilt = await buildChart(coin, priceGraph, marketCapGraph)
-    console.log('chart', chartBuilt)
     showImage('chart', 'jpg')
 }
 
 const showImage = async (name, ext) => {
+    console.log('show', name)
     const options = {
         method: 'POST',
         url: 'https://slack.com/api/files.upload',
