@@ -3,11 +3,11 @@ import * as Api from './api'
 import {
     botName,
     baseUrl,
-    coinString,
+    coinPage,
     channel,
     startListening,
     chartTimeFrame,
-    chartString,
+    chartPage,
     help,
     positiveInsane,
     positiveHigh,
@@ -19,6 +19,7 @@ import {
     negativeMed,
     negativeLow,
     negativeTiny,
+    frontPage,
     botToken,
     precision,
     oathToken
@@ -42,6 +43,7 @@ bot.on('start', (data) => {
 })
 
 bot.on('message', (data) => {
+    console.log('message received')
     if (data && data.text && data.user && data.channel && data.channel === channelId) {
         const textData = data.text
         const commands = textData.split(" ")
@@ -62,27 +64,35 @@ bot.on('message', (data) => {
 })
 
 const showCoin = (textData) => {
-    let percentageCoin
-    const coinArray = textData.trim().split(',')
-    const split = coinArray[coinArray.length - 1].trim().split(' ')
-    if (split[1] === 'in') {
-        const secondCoin = split[2] ? split[2] : 'BTC'
-        coinArray[coinArray.length - 1] = split[0]
-        Api.getCall(baseUrl + coinString + secondCoin.trim().toUpperCase()).then((response) => {
-            percentageCoin = response.data
-        })
-    }
-    coinArray.forEach((coin) => {
-        Api.getCall(baseUrl + coinString + coin.trim().toUpperCase()).then((response) => {
-            const data = response.data
-            bot.postMessage(channel, formatSlackPost(data, percentageCoin), params)
+    Api.getCall(baseUrl + frontPage).then((response) => {
+        const data = response.data
+        let percentageCoin
+        const coinArray = textData.trim().split(',')
+        const split = coinArray[coinArray.length - 1].trim().split(' ')
+        const btcPrice = data.find(coin => coin.short.toLowerCase() === 'btc').price
+        if (split[1] === 'in') {
+            console.log(split)
+            const secondCoin = split[2] ? split[2] : 'btc'
+            coinArray[coinArray.length - 1] = split[0]
+            percentageCoin = data.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
+        }
+        const filteredCoinArray = coinArray.filter((value, index, self) => {
+            return self.indexOf(value.trim()) === index
+        });
+        console.log('made it')
+        filteredCoinArray.forEach((coinName) => {
+            console.log('coinname',coinName)
+            const coin = data.find((responseCoin) => {
+                return coinName.toLowerCase() === responseCoin.short.toLowerCase()
+            })
+            bot.postMessage(channel, formatSlackPost(coin, percentageCoin, btcPrice), params)
         })
     })
 }
 
 const showChart = async (commands) => {
     const coin = commands[2].toUpperCase()
-    Api.getCall(baseUrl + chartString + coin).then((response) => {
+    Api.getCall(baseUrl + chartPage + coin).then((response) => {
         const data = response.data
         const marketCapGraph = response.data.market_cap
         const priceGraph = response.data.price
@@ -100,14 +110,16 @@ const showHelp = () => {
     bot.postMessage(channel, help, params)
 }
 
-const formatSlackPost = (data, percentageCoin) => {
-    const symbol = data.id
-    const coinImage = emojiList && data.id.toLowerCase() in emojiList ? data.id : 'coincap'
-    const priceFiat = data.price.toFixed(2)
-    const perc = percentageCoin ? parseFloat(data.cap24hrChange - percentageCoin.cap24hrChange).toFixed(2) : parseFloat(data.cap24hrChange).toFixed(2)
-    const percPrice = percentageCoin ? parseFloat(data.price / percentageCoin.price).toFixed(precision) : data.btcPrice ? parseFloat(data.price / data.btcPrice).toFixed(precision) : 0
+const formatSlackPost = (coin, percentageCoin, btcPrice) => {
+    console.log('formatting', coin)
+    const symbol = coin.short
+    const coinImage = emojiList && coin.short.toLowerCase() in emojiList ? coin.short : 'coincap'
+    const coinComparedImage = emojiList && percentageCoin && percentageCoin.short.toLowerCase() in emojiList ? percentageCoin.short : percentageCoin ? 'coincap' : 'btc'
+    const priceFiat = coin.price.toFixed(2)
+    const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
+    const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
     const chart = getPercentageChart(perc)
-    return `${symbol} :${coinImage}: $${priceFiat} :BTC: ${percPrice} ${chart} ${perc}%`
+    return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${chart} ${perc}%`
 }
 
 const setCorrectChannel = () => {
