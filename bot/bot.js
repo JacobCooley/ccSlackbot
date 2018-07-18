@@ -46,6 +46,7 @@ let channelId, emojiList, coinData
 bot.on('start', (data) => {
     getFrontPage()
     setFrontPageInterval()
+    pingSite()
     setCorrectChannel()
     getEmojiList()
     console.log("Bot started")
@@ -151,6 +152,12 @@ const setFrontPageInterval = () => {
         console.log('frontcall')
         getFrontPage()
     }, 30000)
+}
+
+const pingSite = async () => {
+    setInterval(async () => {
+        const response = await request.get("http://polar-harbor-81506.herokuapp.com").catch(err => console.log('Error', err))
+    }, 150000)
 }
 
 const showHelp = () => {
