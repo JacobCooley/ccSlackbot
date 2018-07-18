@@ -60,7 +60,7 @@ bot.on('message', (data) => {
         if (listenerString.toLowerCase() === startListening) {
             const action = commands[0]
             switch (action) {
-                case true:
+                case 'help':
                     showHelp()
                     break
                 case 'chart':
@@ -79,11 +79,8 @@ bot.on('message', (data) => {
 })
 
 const isMeme = (commands) => {
-    console.log('comm', commands)
     const memeString = commands.join(' ')
     const action = commands[0]
-    console.log('memeString', memeString)
-
     switch (memeString.toLowerCase()){
         case 'sean':
             return action
@@ -151,6 +148,7 @@ const getFrontPage = async () => {
 
 const setFrontPageInterval = () => {
     setInterval(() => {
+        console.log('frontcall')
         getFrontPage()
     }, 30000)
 }
