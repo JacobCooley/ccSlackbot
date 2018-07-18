@@ -36,6 +36,7 @@ const oathToken = s3.config.oauthToken
 const params = {
     icon_emoji: ':coincap:'
 }
+
 const bot = new Bot({
     token: botToken,
     name: botName
