@@ -1,5 +1,6 @@
 export const botName = 'coincap'
-export const channel = 'chatbot_test'
+// export const channel = 'chatbot_test'
+export const channel = 'trading_fomo_ta'
 export const startListening = 'cc'
 export const baseUrl = 'http://coincap.io/'
 export const frontPage = 'front/'
