@@ -5,7 +5,7 @@ const window = jsdom.window
 const anychart = require('anychart')(window)
 const anychartExport = require('anychart-nodejs')(anychart)
 
-export const buildChart = async (data, data2) => {
+export const buildChart = async (coin, data, data2) => {
     const combinedArray = anychart.data.set(data.map((dataItem) => {
         const data2Item = data2.find((data2Item) => data2Item[0] === dataItem[0])
         return[timeConverter(dataItem[0]), dataItem[1], data2Item[1]]
@@ -14,23 +14,22 @@ export const buildChart = async (data, data2) => {
     const formattedData2 = combinedArray.mapAs({x: 0, value: 2})
 
     const chart = anychart.line()
+    chart.title(`Crypto Chart For ${coin.toUpperCase()}`)
     chart.legend(true);
 
     const yScale1 = anychart.scales.linear();
     chart.yAxis(0).title("Price");
     chart.yAxis(0).scale(yScale1)
+    const series1 = chart.line(formattedData)
+    series1.normal().stroke('#00cc99')
+    series1.yScale(yScale1)
+    series1.name('Price')
 
     const yScale2 = anychart.scales.linear();
     const yAxis2 = chart.yAxis(1);
     yAxis2.orientation("right");
     yAxis2.title("Market Cap");
     yAxis2.scale(yScale2)
-
-    const series1 = chart.line(formattedData)
-    series1.normal().stroke('#00cc99')
-    series1.yScale(yScale1)
-    series1.name('Price')
-
     const series2 = chart.line(formattedData2)
     series2.normal().stroke('#0066cc')
     series2.yScale(yScale2)
@@ -42,10 +41,11 @@ export const buildChart = async (data, data2) => {
 
     return await new Promise((resolve,reject) => anychartExport.exportTo(chart, 'jpg').then((image) => {
         fs.writeFile(`${__dirname}/images/chart.jpg`, image, (fsWriteError) => {
+            console.log('write',fsWriteError)
             if (fsWriteError) {
                 reject(fsWriteError)
             } else {
-                resolve('Complete')
+                resolve(true)
             }
         })
     }))

@@ -2,7 +2,6 @@ const Bot = require('slackbots')
 const fs = require('fs')
 const request = require('request-promise')
 import {buildChart} from './chart'
-
 import {
     botName,
     baseUrl,
@@ -26,26 +25,28 @@ import {
     precision,
 } from '../config/constants'
 
-import {
-    botToken,
-    oathToken
-} from '../config/secrets'
+const aws = require('aws-sdk');
 
-const settings = {
-    token: botToken,
-    name: botName
-}
-
+let s3 = new aws.S3({
+    botToken: process.env.slackBotCCToken,
+    oauthToken: process.env.slackBotCCOauth
+})
+const botToken = s3.config.botToken
+const oathToken = s3.config.oauthToken
 const params = {
     icon_emoji: ':coincap:'
 }
-
-const bot = new Bot(settings)
+const bot = new Bot({
+    token: botToken,
+    name: botName
+})
 let channelId, emojiList, btcPrice
 
 bot.on('start', (data) => {
     setCorrectChannel()
     getEmojiList()
+    console.log("Bot started")
+    console.log("Listening on channel " + channel)
 })
 
 bot.on('message', (data) => {
@@ -78,7 +79,7 @@ const showChart = async (coin, time) => {
     const data = JSON.parse(response)
     const marketCapGraph = data.market_cap
     const priceGraph = data.price
-    const chartBuilt = await buildChart(priceGraph, marketCapGraph)
+    const chartBuilt = await buildChart(coin, priceGraph, marketCapGraph)
     console.log('chart', chartBuilt)
     showImage('chart', 'jpg')
 }
