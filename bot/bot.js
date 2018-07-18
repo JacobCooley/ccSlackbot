@@ -34,7 +34,7 @@ let s3 = new aws.S3({
 const botToken = s3.config.botToken
 const oathToken = s3.config.oauthToken
 const params = {
-    icon_emoji: ':coincap:'
+    icon_emoji: ':ideas_by_nature:'
 }
 
 const bot = new Bot({
