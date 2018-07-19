@@ -47,7 +47,6 @@ bot.on('message', (data) => {
         const textData = data.text
         const commands = textData.split(" ")
         const listenerString = commands.shift().toLowerCase()
-        console.log('lis',listenerString)
         if (listenerString === startListening) {
             const action = commands[0]
             switch (action) {
@@ -62,7 +61,6 @@ bot.on('message', (data) => {
                     break
                 default:
                     const coins = textData.substr(listenerString.length, textData.length)
-                    console.log(listenerString === 'cc')
                     listenerString === 'cc' ? showCoinCC(coins) : null
             }
         }

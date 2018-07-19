@@ -49,13 +49,13 @@ export const showCoinCC = (textData) => {
 }
 
 export const getFrontPage = async () => {
+    console.log('Calling front page')
     const response = await request.get(baseUrl + frontPage).catch(err => new Error(err))
     coinData = JSON.parse(response)
 }
 
 export const setFrontPageInterval = () => {
     setInterval(() => {
-        console.log('frontcall')
         getFrontPage()
     }, 30000)
 }
@@ -79,7 +79,7 @@ const formatSlackPost = (coin, percentageCoin, btcPrice) => {
 }
 
 export const getEmojiList = async () => {
-    console.log('getting emojis')
+    console.log('Getting emojis')
     const response = await request.get(`https://slack.com/api/emoji.list?token=${s3.oauthToken}`).catch(err => console.log(new Error(err)))
     emojiList = JSON.parse(response).emoji
 }
@@ -111,7 +111,7 @@ export const showChart = async (coin, time) => {
 }
 
 export const showImage = async (name, ext) => {
-    console.log('showing ', name)
+    console.log('Showing ', name)
     const options = {
         method: 'POST',
         url: 'https://slack.com/api/files.upload',
