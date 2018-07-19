@@ -1,3 +1,3 @@
-import Bot from './bot/bot'
+import app from './bot/bot'
 
-export default Bot
+export default app

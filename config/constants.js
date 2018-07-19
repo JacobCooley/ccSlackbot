@@ -1,6 +1,10 @@
 export const botName = 'Coins By Nature'
-// export const channel = 'chatbot_test'
-// export const channel = 'trading_fomo_ta'
+export const memes = [
+    'sean',
+    'vincent margera',
+    'do something btc',
+    'do something eth'
+]
 export const startListening = 'cc'
 export const baseUrl = 'http://coincap.io/'
 export const frontPage = 'front/'
