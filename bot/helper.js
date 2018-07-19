@@ -69,13 +69,13 @@ export const pingSite = async () => {
 
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
     const symbol = coin.short
-    //const coinImage = emojiList && coin.short.toLowerCase() in emojiList ? coin.short : 'coincap'
-    //const coinComparedImage = emojiList && percentageCoin && percentageCoin.short.toLowerCase() in emojiList ? percentageCoin.short : percentageCoin ? 'coincap' : 'btc'
+    const coinImage = emojiList && coin.short.toLowerCase() in emojiList ? coin.short : 'coincap'
+    const coinComparedImage = emojiList && percentageCoin && percentageCoin.short.toLowerCase() in emojiList ? percentageCoin.short : percentageCoin ? 'coincap' : 'btc'
     const priceFiat = coin.price.toFixed(2)
     const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
     const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
     const chart = getPercentageImage(perc)
-    return `${symbol} :${'cd'}: $${priceFiat} :${'cd'}: ${percPrice} ${chart} ${perc}%`
+    return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${chart} ${perc}%`
 }
 
 export const getEmojiList = async () => {
