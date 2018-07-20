@@ -3,6 +3,20 @@ export const memes = [
     'sean',
     'vincent margera'
 ]
+export const people = [
+    'chris',
+    'cj',
+    'phil',
+    'jeff',
+    'justin',
+    'sean',
+    'jake',
+    'patrick',
+    'david',
+    'dylan',
+    'stu',
+    'steven'
+]
 export const startListening = [
     'cc',
     'cmc'

@@ -9,6 +9,7 @@ import {
     chartTimeFrame,
     chartPage,
     help,
+    people,
     positiveInsane,
     positiveHigh,
     positiveMed,
@@ -77,15 +78,16 @@ export const formatCoins = (coinArray) => {
     })
 }
 
-function compositeImage(coinImage) {
+function compositeImage(coinImage, isPerson) {
     gm()
         .in('-page', '+0+0')
-        .in('./bot/images/do something.jpg')
+        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something.jpg')
         .in('-page', '+350+650')
-        .in(`./node_modules/cryptocurrency-icons/dist/32@2x/color/${coinImage}@2x.png`)
+        .in(coinImage)
         .flatten()
-        .write('./bot/images/do something coin.jpg', function (hey, err) {
+        .write('./bot/images/cmon do something.jpg', function (err) {
             if (err) console.log(err)
+            else showImage('cmon do something', 'jpg')
         });
 }
 
@@ -159,7 +161,7 @@ export const showImage = async (name, ext) => {
         formData: {
             token: s3.botToken,
             channels: s3.channel,
-            file: fs.createReadStream(`${__dirname}/images/${name}.${ext}`),
+            file: fs.createReadStream(`./bot/images/${name}.${ext}`),
             filename: `${name}.${ext}`,
             filetype: `${ext}`
         }
@@ -168,21 +170,10 @@ export const showImage = async (name, ext) => {
 }
 
 export const doSomething = (coin) => {
-    compositeImage(coin)
-    // const coinName = coinDataCC.find((arrayCoin) => arrayCoin.symbol.toLowerCase() === coin.toLowerCase()).name
-    // imageMagickRequest.get('http://coincap.io/images/coins/' + coinName + '.png', function (error, response, body) {
-    //     if (!error && response.statusCode == 200) {
-    //         const data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body.toString('base64'))
-    //         const base64Data = data.replace(/^data:image\/png;base64,/, "");
-    //         fs.writeFile("./bot/images/coin.png", base64Data, 'base64', function (err) {
-    //             if (err)
-    //                 console.log(err);
-    //             else
-    //                 gm("./bot/images/coin.png").resize(100,100).write("./bot/images/coin.png", function (err) {
-    //                     if (!err) console.log(err);
-    //                 });
-    //                 compositeImage(data)
-    //         });
-    //     }
-    // });
+    console.log(people.includes(coin))
+    if(people.includes(coin)){
+        compositeImage('./bot/images/' + coin + '.jpg', true)
+    }else {
+        compositeImage(`./node_modules/cryptocurrency-icons/dist/32@2x/color/${coin}@2x.png`, false)
+    }
 }
