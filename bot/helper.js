@@ -62,7 +62,6 @@ export const getFrontPageCMC = async () => {
     const response = await request.get(baseUrlCMC + frontPageCMC).catch(err => new Error(err))
     const parsedResponse = JSON.parse(response)
     coinDataCMC = formatCoins(Object.values(parsedResponse.data))
-    console.log('coindatacmc',coinDataCMC)
 }
 
 export const formatCoins = (coinArray) => {
