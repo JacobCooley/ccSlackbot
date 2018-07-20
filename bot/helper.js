@@ -117,8 +117,8 @@ const formatSlackPost = (coin, percentageCoin, btcPrice) => {
     const priceFiat = coin.price.toFixed(2)
     const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
     const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
-    const chart = getPercentageImage(perc)
-    return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${chart} ${perc}%`
+    const flavorImage = getPercentageImage(perc)
+    return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${flavorImage} ${perc}%`
 }
 
 export const getEmojiList = async () => {

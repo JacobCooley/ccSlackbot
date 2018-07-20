@@ -40,8 +40,7 @@ export const buildChart = async (coin, data, data2) => {
     chart.draw()
 
     return await new Promise((resolve,reject) => anychartExport.exportTo(chart, 'jpg').then((image) => {
-        fs.writeFile(`${__dirname}/images/chart.jpg`, image, (fsWriteError) => {
-            console.log('write',fsWriteError)
+        fs.writeFile(`./bot/images/chart.jpg`, image, (fsWriteError) => {
             if (fsWriteError) {
                 reject(fsWriteError)
             } else {
