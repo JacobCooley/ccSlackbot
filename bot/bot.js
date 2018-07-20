@@ -43,29 +43,31 @@ bot.on('start', (data) => {
 })
 
 bot.on('message', (data) => {
-    if (data && data.text && data.user && data.channel && data.channel === channelId) {
+    if (data && data.text && data.user) {
         const textData = data.text
         const commands = textData.split(" ")
         const listenerString = commands.shift().toLowerCase()
-        if(listenerString === 'do' && commands[0] === 'something'){
+        if (listenerString === 'do' && commands[0] === 'something') {
             console.log('doing something')
             doSomething(commands[1])
         }
-        else if (startListening.includes(listenerString)) {
-            const action = commands[0]
-            switch (action) {
-                case 'help':
-                    showHelp()
-                    break
-                case 'chart':
-                    showChart(commands[1], commands[2])
-                    break
-                case isMeme(commands):
-                    showImage(commands.join(' '), 'png')
-                    break
-                default:
-                    const coins = textData.substr(listenerString.length, textData.length)
-                    showCoins(coins, listenerString)
+        if (data.channel && data.channel === channelId) {
+            if (startListening.includes(listenerString)) {
+                const action = commands[0]
+                switch (action) {
+                    case 'help':
+                        showHelp()
+                        break
+                    case 'chart':
+                        showChart(commands[1], commands[2])
+                        break
+                    case isMeme(commands):
+                        showImage(commands.join(' '), 'png')
+                        break
+                    default:
+                        const coins = textData.substr(listenerString.length, textData.length)
+                        showCoins(coins, listenerString)
+                }
             }
         }
     }
