@@ -1,9 +1,7 @@
 export const botName = 'Coins By Nature'
 export const memes = [
     'sean',
-    'vincent margera',
-    'do something btc',
-    'do something eth'
+    'vincent margera'
 ]
 export const startListening = [
     'cc',

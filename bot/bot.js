@@ -11,6 +11,7 @@ import {
     pingSite,
     getEmojiList,
     showImage,
+    doSomething,
     showChart,
     showHelp,
     showCoins,
@@ -34,7 +35,6 @@ let channelId
 
 bot.on('start', (data) => {
     console.log("Bot started")
-    getFrontPageCC()
     setFrontPageInterval()
     pingSite()
     setCorrectChannel()
@@ -47,7 +47,11 @@ bot.on('message', (data) => {
         const textData = data.text
         const commands = textData.split(" ")
         const listenerString = commands.shift().toLowerCase()
-        if (startListening.includes(listenerString)) {
+        if(listenerString === 'do' && commands[0] === 'something'){
+            console.log('doing something')
+            doSomething(commands[1])
+        }
+        else if (startListening.includes(listenerString)) {
             const action = commands[0]
             switch (action) {
                 case 'help':

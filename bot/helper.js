@@ -1,4 +1,5 @@
 const request = require('request-promise')
+const imageMagickRequest = require('request').defaults({encoding: null});
 const fs = require('fs')
 import {
     baseUrlCC,
@@ -23,6 +24,7 @@ import {
 } from '../config/constants'
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
+const gm = require('gm').subClass({imageMagick: true})
 const params = {
     icon_emoji: ':ideas_by_nature:'
 }
@@ -69,16 +71,34 @@ export const formatCoins = (coinArray) => {
         return {
             symbol: coin.short ? coin.short : coin.symbol,
             price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
-            perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0
+            perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
+            name: coin.name ? coin.name : coin.long
         }
     })
 }
 
+function compositeImage(coinImage) {
+    gm()
+        .in('-page', '+0+0')
+        .in('./bot/images/do something.jpg')
+        .in('-page', '+350+650')
+        .in(`./node_modules/cryptocurrency-icons/dist/32@2x/color/${coinImage}@2x.png`)
+        .flatten()
+        .write('./bot/images/do something coin.jpg', function (hey, err) {
+            if (err) console.log(err)
+        });
+}
+
 export const setFrontPageInterval = () => {
+    getMarketData()
     setInterval(() => {
-        getFrontPageCC()
-        getFrontPageCMC()
+        getMarketData()
     }, 30000)
+}
+
+const getMarketData = () => {
+    getFrontPageCC()
+    getFrontPageCMC()
 }
 
 //Just used to keep app alive on a free Heroku account
@@ -127,7 +147,7 @@ export const showChart = async (coin, time) => {
     const marketCapGraph = data.market_cap
     const priceGraph = data.price
     const chartBuilt = await buildChart(coin, priceGraph, marketCapGraph)
-    if(chartBuilt)
+    if (chartBuilt)
         showImage('chart', 'jpg')
 }
 
@@ -145,4 +165,24 @@ export const showImage = async (name, ext) => {
         }
     }
     return request(options).catch(err => console.error(new Error(err)))
+}
+
+export const doSomething = (coin) => {
+    compositeImage(coin)
+    // const coinName = coinDataCC.find((arrayCoin) => arrayCoin.symbol.toLowerCase() === coin.toLowerCase()).name
+    // imageMagickRequest.get('http://coincap.io/images/coins/' + coinName + '.png', function (error, response, body) {
+    //     if (!error && response.statusCode == 200) {
+    //         const data = "data:" + response.headers["content-type"] + ";base64," + new Buffer(body.toString('base64'))
+    //         const base64Data = data.replace(/^data:image\/png;base64,/, "");
+    //         fs.writeFile("./bot/images/coin.png", base64Data, 'base64', function (err) {
+    //             if (err)
+    //                 console.log(err);
+    //             else
+    //                 gm("./bot/images/coin.png").resize(100,100).write("./bot/images/coin.png", function (err) {
+    //                     if (!err) console.log(err);
+    //                 });
+    //                 compositeImage(data)
+    //         });
+    //     }
+    // });
 }
