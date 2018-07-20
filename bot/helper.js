@@ -1,7 +1,9 @@
 const request = require('request-promise')
 const fs = require('fs')
 import {
-    baseUrl,
+    baseUrlCC,
+    baseUrlCMC,
+    frontPageCMC,
     memes,
     chartTimeFrame,
     chartPage,
@@ -16,7 +18,7 @@ import {
     negativeMed,
     negativeLow,
     negativeTiny,
-    frontPage,
+    frontPageCC,
     precision,
 } from '../config/constants'
 import bot, {s3} from './bot'
@@ -25,38 +27,58 @@ const params = {
     icon_emoji: ':ideas_by_nature:'
 }
 
-let emojiList, coinData
+let emojiList, coinDataCC, coinDataCMC
 
-export const showCoinCC = (textData) => {
-    console.log('Showing coins from CC')
+export const showCoins = (textData, listenerString) => {
+    console.log('Showing coins')
     let percentageCoin
     const coinArray = textData.trim().split(',')
     const split = coinArray[coinArray.length - 1].trim().split(' ')
-    const btcPrice = coinData.find(coin => (coin.short.toLowerCase() === 'btc')).price
+    const coinData = listenerString === 'cc' ? coinDataCC : coinDataCMC
+    const btcPrice = coinData.find(coin => (coin.symbol.toLowerCase() === 'btc')).price
     if (split[1] === 'in') {
         const secondCoin = split[2] ? split[2] : 'btc'
         coinArray[coinArray.length - 1] = split[0]
-        percentageCoin = coinData.find((coin) => coin.short.toLowerCase() === secondCoin.toLowerCase())
+        percentageCoin = coinData.find((coin) => coin.symbol.toLowerCase() === secondCoin.toLowerCase())
     }
-    const filteredCoinArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
-    filteredCoinArray.forEach((coinName) => {
+    const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
+    uniqueValuesArray.forEach((coinName) => {
         coinData.find((responseCoin) => {
-            if (responseCoin && responseCoin.short && coinName.trim().toLowerCase() === responseCoin.short.toLowerCase()) {
+            if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
                 return bot.postMessage(s3.channel, formatSlackPost(responseCoin, percentageCoin, btcPrice), params)
             }
         })
     })
 }
 
-export const getFrontPage = async () => {
-    console.log('Calling front page')
-    const response = await request.get(baseUrl + frontPage).catch(err => new Error(err))
-    coinData = JSON.parse(response)
+export const getFrontPageCC = async () => {
+    console.log('Calling front page for CC')
+    const response = await request.get(baseUrlCC + frontPageCC).catch(err => new Error(err))
+    coinDataCC = formatCoins(JSON.parse(response))
+}
+
+export const getFrontPageCMC = async () => {
+    console.log('Calling front page for CMC')
+    const response = await request.get(baseUrlCMC + frontPageCMC).catch(err => new Error(err))
+    const parsedResponse = JSON.parse(response)
+    coinDataCMC = formatCoins(Object.values(parsedResponse.data))
+    console.log('coindatacmc',coinDataCMC)
+}
+
+export const formatCoins = (coinArray) => {
+    return coinArray.map((coin) => {
+        return {
+            symbol: coin.short ? coin.short : coin.symbol,
+            price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
+            perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0
+        }
+    })
 }
 
 export const setFrontPageInterval = () => {
     setInterval(() => {
-        getFrontPage()
+        getFrontPageCC()
+        getFrontPageCMC()
     }, 30000)
 }
 
@@ -68,9 +90,9 @@ export const pingSite = async () => {
 }
 
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
-    const symbol = coin.short
-    const coinImage = emojiList && coin.short.toLowerCase() in emojiList ? coin.short : 'coincap'
-    const coinComparedImage = emojiList && percentageCoin && percentageCoin.short.toLowerCase() in emojiList ? percentageCoin.short : percentageCoin ? 'coincap' : 'btc'
+    const symbol = coin.symbol
+    const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : 'coincap'
+    const coinComparedImage = emojiList && percentageCoin && percentageCoin.symbol.toLowerCase() in emojiList ? percentageCoin.symbol : percentageCoin ? 'coincap' : 'btc'
     const priceFiat = coin.price.toFixed(2)
     const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
     const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
@@ -101,7 +123,7 @@ export const isMeme = (commands) => {
 }
 
 export const showChart = async (coin, time) => {
-    const response = await request.get(baseUrl + chartPage + coin.toUpperCase()).catch(err => new Error(err))
+    const response = await request.get(baseUrlCC + chartPage + coin.toUpperCase()).catch(err => new Error(err))
     const data = JSON.parse(response)
     const marketCapGraph = data.market_cap
     const priceGraph = data.price

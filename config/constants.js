@@ -5,9 +5,14 @@ export const memes = [
     'do something btc',
     'do something eth'
 ]
-export const startListening = 'cc'
-export const baseUrl = 'http://coincap.io/'
-export const frontPage = 'front/'
+export const startListening = [
+    'cc',
+    'cmc'
+]
+export const baseUrlCC = 'http://coincap.io/'
+export const baseUrlCMC = 'https://api.coinmarketcap.com/v2/'
+export const frontPageCC = 'front/'
+export const frontPageCMC = 'ticker/'
 export const coinPage = 'page/'
 export const chartPage = 'history/'
 export const positiveInsane = ':amaze:'

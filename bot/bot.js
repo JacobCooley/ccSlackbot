@@ -6,14 +6,14 @@ import {
 } from '../config/constants'
 
 import {
-    getFrontPage,
+    getFrontPageCC,
     setFrontPageInterval,
     pingSite,
     getEmojiList,
     showImage,
     showChart,
     showHelp,
-    showCoinCC,
+    showCoins,
     isMeme
 } from './helper'
 
@@ -34,7 +34,7 @@ let channelId
 
 bot.on('start', (data) => {
     console.log("Bot started")
-    getFrontPage()
+    getFrontPageCC()
     setFrontPageInterval()
     pingSite()
     setCorrectChannel()
@@ -47,7 +47,7 @@ bot.on('message', (data) => {
         const textData = data.text
         const commands = textData.split(" ")
         const listenerString = commands.shift().toLowerCase()
-        if (listenerString === startListening) {
+        if (startListening.includes(listenerString)) {
             const action = commands[0]
             switch (action) {
                 case 'help':
@@ -61,7 +61,7 @@ bot.on('message', (data) => {
                     break
                 default:
                     const coins = textData.substr(listenerString.length, textData.length)
-                    listenerString === 'cc' ? showCoinCC(coins) : null
+                    showCoins(coins, listenerString)
             }
         }
     }
