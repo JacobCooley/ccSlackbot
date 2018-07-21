@@ -78,10 +78,10 @@ export const formatCoins = (coinArray) => {
     })
 }
 
-function compositeImage(coinImage, isPerson, channel) {
+function compositeImage(coinImage, channel) {
     gm()
         .in('-page', '+0+0')
-        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something person.jpg')
+        .in('./bot/images/do something.jpg')
         .in('-page', '+380+600')
         .in(coinImage)
         .flatten()
@@ -169,11 +169,15 @@ export const showImage = async (name, ext, channel) => {
     return request(options).catch(err => console.error(new Error(err)))
 }
 
-export const doSomething = (coin, channel) => {
-    console.log(people.includes(coin))
-    if(people.includes(coin)){
-        compositeImage('./bot/images/' + coin + '.jpg', true, channel)
+export const doSomething = (image, channel) => {
+    console.log(people.includes(image))
+    if(people.includes(image)){
+        compositeImage('./bot/images/' + image + '.jpeg', channel)
     }else {
-        compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${coin}.png`, false, channel)
+        gm(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`).resize(150,150)
+            .write(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, (err) => {
+            if (err) console.log(err)
+            else compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, channel)
+        })
     }
 }
