@@ -78,16 +78,16 @@ export const formatCoins = (coinArray) => {
     })
 }
 
-function compositeImage(coinImage, isPerson) {
+function compositeImage(coinImage, isPerson, channel) {
     gm()
         .in('-page', '+0+0')
         .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something.jpg')
-        .in('-page', '+350+650')
+        .in('-page', '+400+600')
         .in(coinImage)
         .flatten()
         .write('./bot/images/cmon do something.jpg', function (err) {
             if (err) console.log(err)
-            else showImage('cmon do something', 'jpg')
+            else showImage('cmon do something', 'jpg', channel)
         });
 }
 
@@ -153,14 +153,14 @@ export const showChart = async (coin, time) => {
         showImage('chart', 'jpg')
 }
 
-export const showImage = async (name, ext) => {
+export const showImage = async (name, ext, channel) => {
     console.log('Showing ', name)
     const options = {
         method: 'POST',
         url: 'https://slack.com/api/files.upload',
         formData: {
             token: s3.botToken,
-            channels: s3.channel,
+            channels: channel ? channel : s3.channel,
             file: fs.createReadStream(`./bot/images/${name}.${ext}`),
             filename: `${name}.${ext}`,
             filetype: `${ext}`
@@ -169,11 +169,11 @@ export const showImage = async (name, ext) => {
     return request(options).catch(err => console.error(new Error(err)))
 }
 
-export const doSomething = (coin) => {
+export const doSomething = (coin, channel) => {
     console.log(people.includes(coin))
     if(people.includes(coin)){
-        compositeImage('./bot/images/' + coin + '.jpg', true)
+        compositeImage('./bot/images/' + coin + '.jpg', true, channel)
     }else {
-        compositeImage(`./node_modules/cryptocurrency-icons/dist/32@2x/color/${coin}@2x.png`, false)
+        compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${coin}.png`, false, channel)
     }
 }

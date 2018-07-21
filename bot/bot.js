@@ -49,7 +49,7 @@ bot.on('message', (data) => {
         const listenerString = commands.shift().toLowerCase()
         if (listenerString === 'do' && commands[0] === 'something') {
             console.log('doing something')
-            doSomething(commands[1])
+            doSomething(commands[1], data.channel)
         }
         if (data.channel && data.channel === channelId) {
             if (startListening.includes(listenerString)) {
