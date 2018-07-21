@@ -81,8 +81,8 @@ export const formatCoins = (coinArray) => {
 function compositeImage(coinImage, isPerson, channel) {
     gm()
         .in('-page', '+0+0')
-        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something.jpg')
-        .in('-page', '+400+600')
+        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something person.jpg')
+        .in('-page', '+380+600')
         .in(coinImage)
         .flatten()
         .write('./bot/images/cmon do something.jpg', function (err) {
