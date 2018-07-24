@@ -1,4 +1,5 @@
 const Bot = require('slackbots')
+const { setWsHeartbeat } = require('ws-heartbeat/client')
 import {
     botName,
     startListening,
@@ -33,6 +34,7 @@ const bot = new Bot({
 
 let channelId
 
+
 bot.on('start', (data) => {
     console.log("Bot started")
     setFrontPageInterval()
@@ -40,6 +42,10 @@ bot.on('start', (data) => {
     setCorrectChannel()
     getEmojiList()
     console.log("Listening on channel " + s3.channel)
+})
+
+bot.on('open', () => {
+    setWsHeartbeat(bot.ws, '{ "kind": "ping" }');
 })
 
 bot.on('message', (data) => {
