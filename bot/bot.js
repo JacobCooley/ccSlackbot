@@ -43,6 +43,7 @@ bot.on('start', (data) => {
 })
 
 bot.on('message', (data) => {
+    console.log('receiving message')
     if (data && data.text && data.user) {
         const textData = data.text
         const commands = textData.split(" ")
@@ -52,6 +53,7 @@ bot.on('message', (data) => {
             doSomething(commands[1], data.channel)
         }
         if (data.channel && data.channel === channelId) {
+            console.log('Listening on channel ' + data.channel)
             if (startListening.includes(listenerString)) {
                 const action = commands[0]
                 switch (action) {
