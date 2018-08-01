@@ -67,6 +67,7 @@ bot.on('message', (data) => {
                         showHelp()
                         break
                     case 'chart':
+                    case 'charts':
                         showChart(commands[1], commands[2])
                         break
                     case isMeme(commands):

@@ -37,7 +37,7 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
         series2.yScale(yScale2)
         series2.name('BTC Price')
     }
-    chart.xAxis(0).labels().offsetX(5)
+    chart.xAxis(0).labels().offsetX(-5)
     chart.xAxis(0).labels().format(function (){
         let value = this.value;
         value = timeConverter(value, timeData)
