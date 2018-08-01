@@ -1,12 +1,12 @@
-const request = require('request-promise')
-const imageMagickRequest = require('request').defaults({encoding: null});
-const fs = require('fs')
 import {
     baseUrlCC,
     baseUrlCMC,
     frontPageCMC,
     memes,
     chartTimeFrame,
+    day,
+    hour,
+    minute,
     getCoinCMC,
     chartPage,
     help,
@@ -22,16 +22,16 @@ import {
     negativeLow,
     negativeTiny,
     frontPageCC,
-    precision
+    precision, baseUrlChart
 } from '../config/constants'
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
-
+const request = require('request-promise')
+const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
 const params = {
     icon_emoji: ':ideas_by_nature:'
 }
-
 let emojiList, coinDataCC, coinDataCMC
 
 export const showCoins = (textData, listenerString) => {
@@ -119,16 +119,12 @@ export const getFrontPageCMC = async () => {
 
 export const formatCoins = (coinArray) => {
     return coinArray.map((coin) => {
-        if(coin) {
-            return {
+            return coin ? {
                 symbol: coin.short ? coin.short : coin.symbol,
                 price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
                 perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
                 name: coin.name ? coin.name : coin.long
-            }
-        }
-        else
-            return {}
+            } : {}
     })
 }
 
@@ -197,12 +193,73 @@ export const isMeme = (commands) => {
     return memes.includes(memeString) ? action : false
 }
 
+const getTime = (time) => {
+    switch (time) {
+        case '1':
+            return {
+                time: 1,
+                day: minute,
+                limit: 24 * 60
+            }
+        case '7':
+            return {
+                time: 7,
+                day: hour,
+                limit: 7 * 24
+            }
+        case '30':
+            return {
+                time: 30,
+                day: hour,
+                limit: 30 * 24
+            }
+        case '90':
+            return {
+                time: 90,
+                day: hour,
+                limit: 90 * 24
+            }
+        case '180':
+            return {
+                time: 180,
+                day: day,
+                limit: 180
+            }
+        case '365':
+        default:
+            return {
+                time: 365,
+                day: day,
+                limit: 365
+            }
+    }
+}
+
 export const showChart = async (coin, time) => {
-    const response = await request.get(baseUrlCC + chartPage + coin.toUpperCase()).catch(err => new Error(err))
-    const data = JSON.parse(response)
-    const marketCapGraph = data.market_cap
-    const priceGraph = data.price
-    const chartBuilt = await buildChart(coin, priceGraph, marketCapGraph)
+    console.log('time', time)
+    const isBitcoin = coin.toLowerCase() === 'btc'
+    const timeData = getTime(time)
+    console.log('data', timeData)
+    const responseUSD = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`).catch(err => new Error(err))
+    const dataUSD = JSON.parse(responseUSD)
+    const usdGraph = dataUSD.Data.map((data) => {
+        return [
+            data.time * 1000,
+            data.high
+        ]
+    })
+    let btcGraph
+    if(!isBitcoin) {
+        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=BTC&limit=${timeData.limit}`).catch(err => new Error(err))
+        const dataBTC = JSON.parse(responseBTC)
+        btcGraph = dataBTC.Data.map((data) => {
+            return [
+                data.time * 1000,
+                data.high
+            ]
+        })
+    }
+    const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
     if (chartBuilt)
         showImage('chart', 'jpg')
 }
