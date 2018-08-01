@@ -1,7 +1,6 @@
 export const botName = 'Coins By Nature'
 export const memes = [
-    'sean',
-    'vincent margera'
+    'sean'
 ]
 export const people = [
     'chris',
