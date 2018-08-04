@@ -234,7 +234,7 @@ const getTime = (time) => {
 }
 
 export const showChart = async (coin, time) => {
-    console.log('Show chart', coin + time)
+    console.log('Show chart', coin + time ? time : '')
     const isBitcoin = coin.toLowerCase() === 'btc'
     const timeData = getTime(time)
     const responseUSD = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`).catch(err => new Error(err))
@@ -256,7 +256,8 @@ export const showChart = async (coin, time) => {
             ]
         })
     }
-    await buildChart(coin, timeData, usdGraph, btcGraph)
+    const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
+    if (chartBuilt) showImage('chart', 'jpg')
 }
 
 export const showImage = (name, ext, channel) => {

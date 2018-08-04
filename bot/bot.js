@@ -65,8 +65,7 @@ bot.on('message', (data) => {
                         break
                     case 'chart':
                     case 'charts':
-                        const chartBuilt = showChart(commands[1], commands[2])
-                        if (chartBuilt) showImage('chart', 'jpg')
+                        showChart(commands[1], commands[2])
                         break
                     case isMeme(commands):
                         showImage(commands.join(' '), 'png')
