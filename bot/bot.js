@@ -8,7 +8,6 @@ import {
 
 import {
     setFrontPageInterval,
-    pingSite,
     getEmojiList,
     showImage,
     doSomething,
@@ -37,7 +36,6 @@ let channelId
 bot.on('start', (data) => {
     console.log("Bot started")
     setFrontPageInterval()
-    pingSite()
     setCorrectChannel()
     getEmojiList()
     console.log("Listening on channel " + s3.channel)

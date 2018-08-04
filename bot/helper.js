@@ -158,13 +158,6 @@ const getMarketData = () => {
     }
 }
 
-//Just used to keep app alive on a free Heroku account
-export const pingSite = async () => {
-    setInterval(async () => {
-        await request.get("http://polar-harbor-81506.herokuapp.com").catch(err => new Error(err))
-    }, 150000)
-}
-
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
     const symbol = coin.symbol
     const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : 'coincap'
