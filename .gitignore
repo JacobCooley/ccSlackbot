@@ -5,3 +5,4 @@ yarn.lock
 package-lock.json
 config/secrets.js
 yarn-error.log
+bot/images/chart.jpg
