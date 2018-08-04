@@ -18,4 +18,4 @@ Once you have your repo environment variables on your cloud platform, simply run
 
 ###Help
 
-Once the app is integrated, go to the channel and run cc help to see a list of commands
+Once the app is integrated, go to the channel and type `cc help` to see a list of commands
