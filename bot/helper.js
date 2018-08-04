@@ -149,14 +149,19 @@ export const setFrontPageInterval = () => {
 }
 
 const getMarketData = () => {
-    getFrontPageCC()
-    getFrontPageCMC()
+    try {
+        getFrontPageCC()
+        getFrontPageCMC()
+    }
+    catch (e) {
+        console.log(e)
+    }
 }
 
 //Just used to keep app alive on a free Heroku account
 export const pingSite = async () => {
     setInterval(async () => {
-        const response = await request.get("http://polar-harbor-81506.herokuapp.com").catch(err => new Error(err))
+        await request.get("http://polar-harbor-81506.herokuapp.com").catch(err => new Error(err))
     }, 150000)
 }
 
@@ -236,10 +241,9 @@ const getTime = (time) => {
 }
 
 export const showChart = async (coin, time) => {
-    console.log('time', time)
+    console.log('Show chart', coin + time)
     const isBitcoin = coin.toLowerCase() === 'btc'
     const timeData = getTime(time)
-    console.log('data', timeData)
     const responseUSD = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`).catch(err => new Error(err))
     const dataUSD = JSON.parse(responseUSD)
     const usdGraph = dataUSD.Data.map((data) => {
@@ -259,12 +263,10 @@ export const showChart = async (coin, time) => {
             ]
         })
     }
-    const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
-    if (chartBuilt)
-        showImage('chart', 'jpg')
+    await buildChart(coin, timeData, usdGraph, btcGraph)
 }
 
-export const showImage = async (name, ext, channel) => {
+export const showImage = (name, ext, channel) => {
     console.log('Showing ', name)
     const options = {
         method: 'POST',

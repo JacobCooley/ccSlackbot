@@ -14,8 +14,8 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
         return[dataItem[0], dataItem[1]]
     }))
     const formattedData = usdSetArray.mapAs({x: 0, value: 1})
-    const yScale1 = anychart.scales.linear();
-    chart.yAxis(0).title("USD Price");
+    const yScale1 = anychart.scales.linear()
+    chart.yAxis(0).title("USD Price")
     chart.yAxis(0).scale(yScale1)
     const series1 = chart.line(formattedData)
     series1.normal().stroke('#00cc99')
@@ -27,10 +27,10 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
             return [dataItem[0], dataItem[1]]
         }))
         const formattedData2 = btcSetArray.mapAs({x: 0, value: 1})
-        const yScale2 = anychart.scales.linear();
-        const yAxis2 = chart.yAxis(1);
-        yAxis2.orientation("right");
-        yAxis2.title("BTC Price");
+        const yScale2 = anychart.scales.linear()
+        const yAxis2 = chart.yAxis(1)
+        yAxis2.orientation("right")
+        yAxis2.title("BTC Price")
         yAxis2.scale(yScale2)
         const series2 = chart.line(formattedData2)
         series2.normal().stroke('#FF9900')
@@ -39,9 +39,12 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
     }
     chart.xAxis(0).labels().offsetX(-5)
     chart.xAxis(0).labels().format(function (){
-        let value = this.value;
+        let value = this.value
         value = timeConverter(value, timeData)
-        return value;
+        return value
+    })
+    chart.yAxis(0).labels().format(function (){
+        return '$' + this.value
     })
     chart.bounds(0, 0, 800, 600)
     chart.container('container')

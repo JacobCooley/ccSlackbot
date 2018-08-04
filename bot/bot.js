@@ -1,5 +1,5 @@
 const Bot = require('slackbots')
-const { setWsHeartbeat } = require('ws-heartbeat/client')
+const {setWsHeartbeat} = require('ws-heartbeat/client')
 import {
     botName,
     startListening,
@@ -7,7 +7,6 @@ import {
 } from '../config/constants'
 
 import {
-    getFrontPageCC,
     setFrontPageInterval,
     pingSite,
     getEmojiList,
@@ -68,7 +67,8 @@ bot.on('message', (data) => {
                         break
                     case 'chart':
                     case 'charts':
-                        showChart(commands[1], commands[2])
+                        const chartBuilt = showChart(commands[1], commands[2])
+                        if (chartBuilt) showImage('chart', 'jpg')
                         break
                     case isMeme(commands):
                         showImage(commands.join(' '), 'png')
