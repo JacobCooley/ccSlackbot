@@ -7,3 +7,4 @@ config/secrets.js
 yarn-error.log
 bot/images/*
 .gitignore
+
