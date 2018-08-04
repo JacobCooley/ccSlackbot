@@ -10,7 +10,6 @@ import {
     getCoinCMC,
     chartPage,
     help,
-    people,
     positiveInsane,
     positiveHigh,
     positiveMed,
@@ -26,6 +25,7 @@ import {
 } from '../config/constants'
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
+
 const request = require('request-promise')
 const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
@@ -119,12 +119,12 @@ export const getFrontPageCMC = async () => {
 
 export const formatCoins = (coinArray) => {
     return coinArray.map((coin) => {
-            return coin ? {
-                symbol: coin.short ? coin.short : coin.symbol,
-                price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
-                perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
-                name: coin.name ? coin.name : coin.long
-            } : {}
+        return coin ? {
+            symbol: coin.short ? coin.short : coin.symbol,
+            price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
+            perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
+            name: coin.name ? coin.name : coin.long
+        } : {}
     })
 }
 
@@ -253,7 +253,7 @@ export const showChart = async (coin, time) => {
         ]
     })
     let btcGraph
-    if(!isBitcoin) {
+    if (!isBitcoin) {
         const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=BTC&limit=${timeData.limit}`).catch(err => new Error(err))
         const dataBTC = JSON.parse(responseBTC)
         btcGraph = dataBTC.Data.map((data) => {
@@ -283,14 +283,9 @@ export const showImage = (name, ext, channel) => {
 }
 
 export const doSomething = (image, channel) => {
-    console.log(people.includes(image))
-    if (people.includes(image)) {
-        compositeImage('./bot/images/' + image + '.jpeg', channel)
-    } else {
-        gm(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`).resize(150, 150)
-            .write(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, (err) => {
-                if (err) console.log(err)
-                else compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, channel)
-            })
-    }
+    gm(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`).resize(150, 150)
+        .write(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, (err) => {
+            if (err) console.log(err)
+            else compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, channel)
+        })
 }

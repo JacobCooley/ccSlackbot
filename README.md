@@ -14,7 +14,11 @@ A bot that posts crypto prices/charts to a specified channel in your teams slack
 
 ###Running
 
-Once you have your repo environment variables on your cloud platform, simply run `npm run start`
+Once you have your repo environment variables on your cloud platform, simply run `npm run start
+
+###Images
+
+You can have the bot post images by adding the `png` format image into `/bot/images` folder.  Once the image is there, add the name of the image (without the file extension) into `/config/constants.js` under the memes array
 
 ###Help
 
