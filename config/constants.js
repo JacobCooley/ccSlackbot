@@ -31,21 +31,21 @@ export const negativeTiny = ':downtrend:'
 export const precision = 8
 export const help =
     `   *Coinbot's help section*
+    -------------------------------
+    cc -- gets prices from CoinCap
+    cmc -- gets prices from CoinMarketCap
     
-    cc gets prices from CoinCap
-    cmc gets prices from CoinMarketCap
-    
-    cc [symbol] - [symbol]'s price in USD and amount relative to BTC
+    cc [symbol] -- [symbol]'s price in USD and amount relative to BTC
     _e.g._  \`cc btc\` \`cmc btc\`
     
-    cc [symbol1] in [symbol2] - [symbol1]'s price in USD and amount relative to [symbol2]
+    cc [symbol1] in [symbol2] -- [symbol1]'s price in USD and amount relative to [symbol2]
     _e.g._  \`cc btc in eth\` \`cmc btc in eth\`
     
-    cc [symbol1], [symbol2], [symbol...] Send in an array to get multiple values at once
+    cc [symbol1], [symbol2], [symbol...] -- Send in an array to get multiple values at once
     _e.g._  \`cmc btc, eth, ada\`  \`cc btc, eth, ada in eth\`
    
-    [time] values for charts can be 1, 7, 30, 90, 180, and 365.  It defaults to 365
-    cc chart [symbol] [time]  - Chart for [symbol] including price compared with USD and BTC.
+    cc chart [symbol] [time] -- Chart for [symbol] including price compared with USD and BTC.
+        *[time] values for charts can be 1, 7, 30, 90, 180, and 365.  It defaults to 365*
     `
 export const chartTimeFrame = {
     1: '1day/',
