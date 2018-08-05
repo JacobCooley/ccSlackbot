@@ -3,8 +3,8 @@ A bot that posts crypto prices/charts to a specified channel in your teams slack
 ### Setup
 1. Fork cryptoBot from `https://github.com/JacobCooley/cryptoBot`
 2. Navigate to the folder and run `npm i`
-3. Create a [Slack OAuth Token](https://api.slack.com/docs/oauth)
-4. Create A [Slackbot](https://api.slack.com/bot-users#creating-bot-user) in your Teams Slack (only follow step 1)
+3. Create a [Slack OAuth Token](https://api.slack.com/custom-integrations/legacy-tokens)
+4. Create A [Slackbot](https://ideasbynature.slack.com/apps/A0F7YS25R-bots?next_id=0) in your Teams Slack (only follow step 1)
 5. Add 3 Environment Variables
     - slackBotCCOauth - Your Oauth token you created in Step 3
     - slackBotCCToken - Your Slackbot token from step 4
