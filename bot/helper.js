@@ -25,33 +25,29 @@ import {
 } from '../config/constants'
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
-
+let emojiList, coinDataCC, coinDataCMC
 const request = require('request-promise')
 const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
 const params = {
     icon_emoji: ':ideas_by_nature:'
 }
-let emojiList, coinDataCC, coinDataCMC
 
-export const showCoins = (textData, listenerString) => {
+export const showCoins = (textData, listenerString, baseCoin) => {
     if (listenerString === 'cc')
-        showCoinsCC(textData)
+        showCoinsCC(textData, baseCoin).then(() => console.log("Posted from CC"))
     else
-        showCoinsCMC(textData)
+        showCoinsCMC(textData, baseCoin).then(() => console.log("Posted from CMC"))
 
 }
 
-const showCoinsCMC = async (textData) => {
+const showCoinsCMC = async (textData, baseCoin) => {
     console.log('Showing coins from coinmarketcap')
     let percentageCoin
     const coinArray = textData.trim().split(',')
-    const split = coinArray[coinArray.length - 1].trim().split(' ')
-    if (split[1] === 'in') {
+    if (typeof baseCoin !== 'undefined') {
         try {
-            const secondCoin = split[2] ? split[2] : 'btc'
-            coinArray[coinArray.length - 1] = split[0]
-            const percentPos = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === secondCoin.toLowerCase()).id
+            const percentPos = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase()).id
             const response = await request.get(baseUrlCMC + getCoinCMC + percentPos).catch(err => new Error(err))
             percentageCoin = formatCoins([JSON.parse(response).data])[0]
         }
@@ -83,18 +79,19 @@ const showCoinsCMC = async (textData) => {
     })
 }
 
-const showCoinsCC = async (textData) => {
+const showCoinsCC = async (textData, baseCoin) => {
     console.log('Showing coins from coincap')
     let percentageCoin
     const coinArray = textData.trim().split(',')
-    const split = coinArray[coinArray.length - 1].trim().split(' ')
     const btcPrice = coinDataCC.find(coin => (coin.symbol.toLowerCase() === 'btc')).price
-    if (split[1] === 'in') {
-        const secondCoin = split[2] ? split[2] : 'btc'
-        coinArray[coinArray.length - 1] = split[0]
-        percentageCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === secondCoin.toLowerCase())
+    if (typeof baseCoin !== 'undefined') {
+        percentageCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
     }
     const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
+    console.log('perc', percentageCoin)
+    console.log('uniqueValuesArray', uniqueValuesArray)
+    console.log('coinArray', coinArray)
+    console.log('baseCoin', baseCoin)
     uniqueValuesArray.forEach((coinName) => {
         coinDataCC.find((responseCoin) => {
             if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
@@ -159,6 +156,7 @@ const getMarketData = () => {
 }
 
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
+    console.log('Formatting slackpost')
     const symbol = coin.symbol
     const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : 'coincap'
     const coinComparedImage = emojiList && percentageCoin && percentageCoin.symbol && percentageCoin.symbol.toLowerCase() in emojiList ? percentageCoin.symbol : percentageCoin ? 'coincap' : 'btc'
@@ -233,7 +231,7 @@ const getTime = (time) => {
     }
 }
 
-export const showChart = async (coin, time) => {
+export const showChart = async (coin, time, baseCoin) => {
     console.log('Show chart', coin + time ? time : '')
     const isBitcoin = coin.toLowerCase() === 'btc'
     const timeData = getTime(time)

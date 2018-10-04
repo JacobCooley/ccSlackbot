@@ -50,11 +50,19 @@ bot.on('message', (data) => {
     if (data && data.text && data.user) {
         const textData = data.text
         const commands = textData.split(" ")
+        let baseCoin
         const listenerString = commands.shift().toLowerCase()
         if (listenerString === 'do' && commands[0] === 'something') {
             console.log('doing something')
             doSomething(commands[1], data.channel)
         }
+        console.log('commands', commands)
+        console.log('size', commands[commands.length - 2])
+        if(commands[commands.length - 2] === 'in'){
+            baseCoin = commands.pop()
+            commands.pop()
+        }
+        console.log('commands2', commands)
         if (data.channel && data.channel === channelId) {
             console.log('Listening on channel ' + data.channel)
             if (startListening.includes(listenerString)) {
@@ -65,14 +73,13 @@ bot.on('message', (data) => {
                         break
                     case 'chart':
                     case 'charts':
-                        showChart(commands[1], commands[2])
+                        showChart(commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
                         break
                     case isMeme(commands):
                         showImage(commands.join(' '), 'png')
                         break
                     default:
-                        const coins = textData.substr(listenerString.length, textData.length)
-                        showCoins(coins, listenerString)
+                        showCoins(commands.join(), listenerString, baseCoin)
                 }
             }
         }
