@@ -33,22 +33,17 @@ const params = {
     icon_emoji: ':ideas_by_nature:'
 }
 
-export const showCoins = (textData, listenerString, baseCoin) => {
-    if (listenerString === 'cc')
-        showCoinsCMC(listenerString, textData, baseCoin, baseUrlCC, getCoinCC).then(() => console.log("Posted from CC"))
-    else
-        showCoinsCMC(listenerString, textData, baseCoin, baseUrlCMC, getCoinCMC).then(() => console.log("Posted from CMC"))
-
-}
-
-const showCoinsCMC = async (listenerString, textData, baseCoin, baseUrl, coinUrl) => {
+export const showCoins = async (textData, listenerString, baseCoin) => {
     console.log('Showing coins')
+    const baseUrl = listenerString === 'cc' ? baseUrlCC : baseUrlCMC
+    const coinUrl = listenerString === 'cc' ? getCoinCC : getCoinCMC
     let percentageCoin
     const coinArray = textData.trim().split(',')
     if (typeof baseCoin !== 'undefined') {
         try {
             const percentCoin = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
-            const response = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? percentCoin.name.toLowerCase() : percentCoin.id).catch(err => new Error(err))
+            const idOrName = listenerString === 'cc' ? percentCoin.name.toLowerCase() : percentCoin.id
+            const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
             percentageCoin = formatCoins([JSON.parse(response).data])[0]
         }
         catch (e) {
@@ -59,7 +54,9 @@ const showCoinsCMC = async (listenerString, textData, baseCoin, baseUrl, coinUrl
     let coinData = await Promise.all(uniqueValuesArray.map(async (uniqueValue) => {
         try {
             const coin = coinDataCMC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase())
-            const response = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? coin.name.toLowerCase() : coin.id).catch(err => new Error(err))
+            const idOrName = listenerString === 'cc' ? coin.name.toLowerCase() : coin.id
+            console.log('uri', baseUrl + coinUrl + idOrName)
+            const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
             return JSON.parse(response).data
         }
         catch (e) {
@@ -68,8 +65,9 @@ const showCoinsCMC = async (listenerString, textData, baseCoin, baseUrl, coinUrl
     }))
     coinData = formatCoins(coinData)
     const btcCoin = coinDataCMC.find(coin => (coin.symbol.toLowerCase() === 'btc'))
-    const btcData = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? btcCoin.name.toLowerCase() : btcCoin.id).catch(err => new Error(err))
-    const btcPrice = JSON.parse(btcData).data.quotes.USD.price
+    const idOrName = listenerString === 'cc' ? btcCoin.name.toLowerCase() : btcCoin.id
+    const btcData = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
+    const btcPrice = listenerString === 'cc' ? JSON.parse(btcData).data.priceUsd : JSON.parse(btcData).data.quotes.USD.price
     uniqueValuesArray.forEach((coinName) => {
         coinData.find((responseCoin) => {
             if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
@@ -79,32 +77,8 @@ const showCoinsCMC = async (listenerString, textData, baseCoin, baseUrl, coinUrl
     })
 }
 
-const showCoinsCC = async (textData, baseCoin) => {
-    console.log('Showing coins from coincap')
-    let percentageCoin
-    const coinArray = textData.trim().split(',')
-    const btcPrice = coinDataCC.find(coin => (coin.symbol.toLowerCase() === 'btc')).price
-    if (typeof baseCoin !== 'undefined') {
-        percentageCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
-    }
-    const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
-    uniqueValuesArray.forEach((coinName) => {
-        coinDataCC.find((responseCoin) => {
-            if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
-                return bot.postMessage(s3.channel, formatSlackPost(responseCoin, percentageCoin, btcPrice), params)
-            }
-        })
-    })
-}
-
-export const getFrontPageCC = async () => {
-    console.log('Calling front page for CC')
-    const response = await request.get(baseUrlCC + frontPageCC).catch(err => new Error(err))
-    coinDataCC = formatCoins(JSON.parse(response))
-}
-
-export const getFrontPageCMC = async () => {
-    console.log('Calling front page for CMC')
+export const getFrontPage = async () => {
+    console.log('Calling front page')
     const response = await request.get(baseUrlCMC + frontPageCMC).catch(err => new Error(err))
     const parsedResponse = JSON.parse(response)
     coinDataCMC = parsedResponse.data
@@ -113,10 +87,10 @@ export const getFrontPageCMC = async () => {
 export const formatCoins = (coinArray) => {
     return coinArray.map((coin) => {
         return coin ? {
-            symbol: coin.short ? coin.short : coin.symbol,
-            price: coin.price ? coin.price : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
-            perc: coin.perc ? coin.perc : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
-            name: coin.name ? coin.name : coin.long
+            symbol: coin.symbol,
+            price: coin.priceUsd ? parseFloat(coin.priceUsd) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
+            perc: coin.changePercent24Hr ? parseFloat(coin.changePercent24Hr) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
+            name: coin.name
         } : {}
     })
 }
@@ -143,8 +117,7 @@ export const setFrontPageInterval = () => {
 
 const getMarketData = () => {
     try {
-        //getFrontPageCC()
-        getFrontPageCMC()
+        getFrontPage()
     }
     catch (e) {
         console.log(e)
