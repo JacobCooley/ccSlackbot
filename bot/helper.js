@@ -20,7 +20,7 @@ import {
     negativeMed,
     negativeLow,
     negativeTiny,
-    frontPageCC,
+    getCoinCC,
     precision, baseUrlChart
 } from '../config/constants'
 import bot, {s3} from './bot'
@@ -35,20 +35,20 @@ const params = {
 
 export const showCoins = (textData, listenerString, baseCoin) => {
     if (listenerString === 'cc')
-        showCoinsCC(textData, baseCoin).then(() => console.log("Posted from CC"))
+        showCoinsCMC(listenerString, textData, baseCoin, baseUrlCC, getCoinCC).then(() => console.log("Posted from CC"))
     else
-        showCoinsCMC(textData, baseCoin).then(() => console.log("Posted from CMC"))
+        showCoinsCMC(listenerString, textData, baseCoin, baseUrlCMC, getCoinCMC).then(() => console.log("Posted from CMC"))
 
 }
 
-const showCoinsCMC = async (textData, baseCoin) => {
-    console.log('Showing coins from coinmarketcap')
+const showCoinsCMC = async (listenerString, textData, baseCoin, baseUrl, coinUrl) => {
+    console.log('Showing coins')
     let percentageCoin
     const coinArray = textData.trim().split(',')
     if (typeof baseCoin !== 'undefined') {
         try {
-            const percentPos = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase()).id
-            const response = await request.get(baseUrlCMC + getCoinCMC + percentPos).catch(err => new Error(err))
+            const percentCoin = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
+            const response = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? percentCoin.name.toLowerCase() : percentCoin.id).catch(err => new Error(err))
             percentageCoin = formatCoins([JSON.parse(response).data])[0]
         }
         catch (e) {
@@ -58,8 +58,8 @@ const showCoinsCMC = async (textData, baseCoin) => {
     const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
     let coinData = await Promise.all(uniqueValuesArray.map(async (uniqueValue) => {
         try {
-            const coinPos = coinDataCMC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase()).id
-            const response = await request.get(baseUrlCMC + getCoinCMC + coinPos).catch(err => new Error(err))
+            const coin = coinDataCMC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase())
+            const response = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? coin.name.toLowerCase() : coin.id).catch(err => new Error(err))
             return JSON.parse(response).data
         }
         catch (e) {
@@ -67,8 +67,8 @@ const showCoinsCMC = async (textData, baseCoin) => {
         }
     }))
     coinData = formatCoins(coinData)
-    const btcPos = coinDataCMC.find(coin => (coin.symbol.toLowerCase() === 'btc')).id
-    const btcData = await request.get(baseUrlCMC + 'ticker/' + btcPos).catch(err => new Error(err))
+    const btcCoin = coinDataCMC.find(coin => (coin.symbol.toLowerCase() === 'btc'))
+    const btcData = await request.get(baseUrl + coinUrl + listenerString === 'cc' ? btcCoin.name.toLowerCase() : btcCoin.id).catch(err => new Error(err))
     const btcPrice = JSON.parse(btcData).data.quotes.USD.price
     uniqueValuesArray.forEach((coinName) => {
         coinData.find((responseCoin) => {
@@ -88,10 +88,6 @@ const showCoinsCC = async (textData, baseCoin) => {
         percentageCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
     }
     const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
-    console.log('perc', percentageCoin)
-    console.log('uniqueValuesArray', uniqueValuesArray)
-    console.log('coinArray', coinArray)
-    console.log('baseCoin', baseCoin)
     uniqueValuesArray.forEach((coinName) => {
         coinDataCC.find((responseCoin) => {
             if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
@@ -147,7 +143,7 @@ export const setFrontPageInterval = () => {
 
 const getMarketData = () => {
     try {
-        getFrontPageCC()
+        //getFrontPageCC()
         getFrontPageCMC()
     }
     catch (e) {
@@ -232,9 +228,10 @@ const getTime = (time) => {
 }
 
 export const showChart = async (coin, time, baseCoin) => {
-    console.log('Show chart', coin + time ? time : '')
+    console.log('Show chart', coin)
     const isBitcoin = coin.toLowerCase() === 'btc'
     const timeData = getTime(time)
+    console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`)
     const responseUSD = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`).catch(err => new Error(err))
     const dataUSD = JSON.parse(responseUSD)
     const usdGraph = dataUSD.Data.map((data) => {
@@ -244,8 +241,9 @@ export const showChart = async (coin, time, baseCoin) => {
         ]
     })
     let btcGraph
-    if (!isBitcoin) {
-        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=BTC&limit=${timeData.limit}`).catch(err => new Error(err))
+    if (!isBitcoin || typeof baseCoin !== 'undefined') {
+        console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin.toUpperCase() : "BTC"}&limit=${timeData.limit}`)
+        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin : "BTC"}&limit=${timeData.limit}`).catch(err => new Error(err))
         const dataBTC = JSON.parse(responseBTC)
         btcGraph = dataBTC.Data.map((data) => {
             return [
@@ -255,7 +253,7 @@ export const showChart = async (coin, time, baseCoin) => {
         })
     }
     const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
-    if (chartBuilt) showImage('chart', 'jpg')
+    if (chartBuilt) showImage('chart', 'png')
 }
 
 export const showImage = (name, ext, channel) => {

@@ -56,13 +56,10 @@ bot.on('message', (data) => {
             console.log('doing something')
             doSomething(commands[1], data.channel)
         }
-        console.log('commands', commands)
-        console.log('size', commands[commands.length - 2])
         if(commands[commands.length - 2] === 'in'){
             baseCoin = commands.pop()
             commands.pop()
         }
-        console.log('commands2', commands)
         if (data.channel && data.channel === channelId) {
             console.log('Listening on channel ' + data.channel)
             if (startListening.includes(listenerString)) {
