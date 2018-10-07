@@ -90,7 +90,9 @@ export const formatCoins = (coinArray) => {
             symbol: coin.symbol,
             price: coin.priceUsd ? parseFloat(coin.priceUsd) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
             perc: coin.changePercent24Hr ? parseFloat(coin.changePercent24Hr) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
-            name: coin.name
+            name: coin.name,
+            supply: coin.supply ? coin.supply : 0,
+            volume: coin.volumeUsd24Hr ? coin.volumeUsd24Hr : 0
         } : {}
     })
 }
@@ -216,9 +218,9 @@ export const displayTop = async (limit, sort) => {
     }
     const topResponse = await request.get(`${baseUrlCC}${getCoinCC}?limit=${limit}`).catch(err => new Error(err))
     const topData = formatCoins(JSON.parse(topResponse).data)
-    let messageString = ''
+    let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i+1} :${coin.symbol}: ${coin.name} $${formatNumber(coin.price)}\n`
+        messageString += `#${i+1} :${coin.symbol}: ${coin.name} $${formatNumber(coin.price)} ${formatNumber(coin.perc)}% 24Hr Volume=${formatNumber(coin.volume)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
