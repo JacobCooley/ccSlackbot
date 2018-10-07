@@ -24,6 +24,7 @@ import {
 } from '../config/constants'
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
+
 let emojiList, coinDataCC, coinDataCMC
 const request = require('request-promise')
 const fs = require('fs')
@@ -207,10 +208,10 @@ const getTime = (time) => {
 
 export const displayTop = async (limit, sort) => {
     console.log('Display top ' + limit, sort)
-    if(typeof limit === 'undefined'){
+    if (typeof limit === 'undefined') {
         limit = 10
     }
-    if(isNaN(limit)){
+    if (isNaN(limit)) {
         const limitHolder = limit
         limit = sort
         sort = limitHolder
@@ -219,7 +220,7 @@ export const displayTop = async (limit, sort) => {
     const topData = formatCoins(JSON.parse(topResponse).data)
     let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i+1} :${coin.symbol}: ${coin.symbol} $${formatNumber(coin.price)} ${formatNumber(coin.perc)}% 24Hr Volume=${formatNumber(coin.volume)} \n`
+        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol} $${formatNumber(coin.price)} ${formatNumber(coin.perc)}% 24Hr Volume=${formatNumber(coin.volume)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
@@ -232,26 +233,33 @@ export const showChart = async (coin, time, baseCoin) => {
     console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`)
     const responseUSD = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`).catch(err => new Error(err))
     const dataUSD = JSON.parse(responseUSD)
-    const usdGraph = dataUSD.Data.map((data) => {
-        return [
-            data.time * 1000,
-            data.close
-        ]
-    })
-    let btcGraph
-    if (!isBitcoin || typeof baseCoin !== 'undefined') {
-        console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin.toUpperCase() : "BTC"}&limit=${timeData.limit}`)
-        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin.toUpperCase() : "BTC"}&limit=${timeData.limit}`).catch(err => new Error(err))
-        const dataBTC = JSON.parse(responseBTC)
-        btcGraph = dataBTC.Data.map((data) => {
+    if (dataUSD.Data.length !== 0) {
+        const usdGraph = dataUSD.Data.map((data) => {
             return [
                 data.time * 1000,
                 data.close
             ]
         })
+        let baseGraph
+        if (!isBitcoin && typeof baseCoin === 'undefined') {
+            baseCoin = 'BTC'
+        }
+        if (typeof baseCoin !== 'undefined') {
+            console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${baseCoin.toUpperCase()}&limit=${timeData.limit}`)
+            const responseBase = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${baseCoin.toUpperCase()}&limit=${timeData.limit}`).catch(err => new Error(err))
+            const dataBase = JSON.parse(responseBase)
+            if (dataBase.Data.length !== 0) {
+                baseGraph = dataBase.Data.map((data) => {
+                    return [
+                        data.time * 1000,
+                        data.close
+                    ]
+                })
+            }
+        }
+        const chartBuilt = await buildChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+        if (chartBuilt) showImage('chart', chartExtension)
     }
-    const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
-    if (chartBuilt) showImage('chart', chartExtension)
 }
 
 export const showImage = (name, ext, channel) => {

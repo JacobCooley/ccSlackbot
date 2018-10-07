@@ -7,6 +7,18 @@ export const startListening = [
     'cc',
     'cmc'
 ]
+export const coinColors = {
+    "BTC": '#FF9900',
+    "ETH": '#3c3c3d',
+    "XRP": '#006097',
+    "BCH": '#ee8c28',
+    "ADA": '#333333',
+    "LTC": '#d3d3d3',
+    "XLM": '#04b5e5',
+    "SALT": '#00B2B2',
+    "XMR": '#ff6600',
+    "DOGE": '#e1b303'
+}
 export const baseUrlCC = 'https://api.coincap.io/v2/'
 export const baseUrlCMC = 'https://api.coinmarketcap.com/v2/'
 export const baseUrlChart = 'https://min-api.cryptocompare.com/data/'
@@ -16,7 +28,6 @@ export const minute = 'histominute'
 export const frontPageCMC = 'listings/'
 export const getCoinCMC = 'ticker/'
 export const getCoinCC = 'assets/'
-export const chartPage = 'history/'
 export const positiveMoon = ':amaze:'
 export const positiveInsane = ':amaze:'
 export const positiveHigh = ':awyeah:'
@@ -52,11 +63,3 @@ export const help =
         *[limit] will default to 10
         *[sort] values can be ... .  It defaults to priceByMarketCap
             `
-export const chartTimeFrame = {
-    1: '1day/',
-    7: '7day/',
-    30: '30day/',
-    90: '90day/',
-    180: '180day/',
-    365: '365day/'
-}
