@@ -1,73 +1,64 @@
 const fs = require('fs')
 var JSDOM = require('jsdom').JSDOM;
+// Create instance of JSDOM.
 var jsdom = new JSDOM('<body><div id="container"></div></body>', {runScripts: 'dangerously'});
+// Get window
 var window = jsdom.window;
-const anychart = require('anychart')(window)
-const anychartExport = require('anychart-nodejs')(anychart)
+
+// For jsdom version 9 or lower
+// var jsdom = require('jsdom').jsdom;
+// var document = jsdom('<body><div id="container"></div></body>');
+// var window = document.defaultView;
+
+// require anychart and anychart export modules
+var anychart = require('anychart')(window);
+var anychartExport = require('anychart-nodejs')(anychart);
 
 export const buildChart = async (coin, timeData, usdData, btcData) => {
-    // const chart = anychart.line()
-    // chart.title(`${timeData.time} Day Chart For ${coin.toUpperCase()}`)
-    // chart.legend(true)
-    // const usdSetArray = anychart.data.set(usdData.map((dataItem) => {
-    //     return[dataItem[0], dataItem[1]]
-    // }))
-    // const formattedData = usdSetArray.mapAs({x: 0, value: 1})
-    // const yScale1 = anychart.scales.linear()
-    // chart.yAxis(0).title("USD Price")
-    // chart.yAxis(0).scale(yScale1)
-    // const series1 = chart.line(formattedData)
-    // series1.normal().stroke('#00cc99')
-    // series1.yScale(yScale1)
-    // series1.name('USD Price')
-    // // if(btcData) {
-    // //     const btcSetArray = anychart.data.set(btcData.map((dataItem) => {
-    // //         return [dataItem[0], dataItem[1]]
-    // //     }))
-    // //     const formattedData2 = btcSetArray.mapAs({x: 0, value: 1})
-    // //     const yScale2 = anychart.scales.linear()
-    // //     const yAxis2 = chart.yAxis(1)
-    // //     yAxis2.orientation("right")
-    // //     yAxis2.title("BTC Price")
-    // //     yAxis2.scale(yScale2)
-    // //     const series2 = chart.line(formattedData2)
-    // //     series2.normal().stroke('#FF9900')
-    // //     series2.yScale(yScale2)
-    // //     series2.name('BTC Price')
-    // // }
-    // chart.xAxis(0).labels().offsetX(-5)
-    // chart.xAxis(0).labels().format(function (){
-    //     let value = this.value
-    //     value = timeConverter(value, timeData)
-    //     return value
-    // })
-    // chart.yAxis(0).labels().format(function (){
-    //     return '$' + this.value
-    // })
-    // chart.bounds(0, 0, 800, 600)
-    // chart.container('container')
-    // chart.draw()
+    const chart = anychart.line()
+    chart.title(`${timeData.time} Day Chart For ${coin.toUpperCase()}`)
+    chart.legend(true)
+    const usdSetArray = anychart.data.set(usdData.map((dataItem) => {
+        return[dataItem[0], dataItem[1]]
+    }))
+    const formattedData = usdSetArray.mapAs({x: 0, value: 1})
+    const yScale1 = anychart.scales.linear()
+    chart.yAxis(0).title("USD Price")
+    chart.yAxis(0).scale(yScale1)
+    const series1 = chart.line(formattedData)
+    series1.stroke('#00cc99')
+    series1.yScale(yScale1)
+    series1.name('USD Price')
+    if(btcData) {
+        const btcSetArray = anychart.data.set(btcData.map((dataItem) => {
+            return [dataItem[0], dataItem[1]]
+        }))
+        const formattedData2 = btcSetArray.mapAs({x: 0, value: 1})
+        const yScale2 = anychart.scales.linear()
+        const yAxis2 = chart.yAxis(1)
+        yAxis2.orientation("right")
+        yAxis2.title("BTC Price")
+        yAxis2.scale(yScale2)
+        const series2 = chart.line(formattedData2)
+        series2.stroke('#FF9900')
+        series2.yScale(yScale2)
+        series2.name('BTC Price')
+    }
+    chart.xAxis(0).labels().offsetX(-5)
+    chart.xAxis(0).labels().format(function (){
+        let value = this.value
+        value = timeConverter(value, timeData)
+        return value
+    })
+    chart.yAxis(0).labels().format(function (){
+        return '$' + this.value
+    })
+    chart.bounds(0, 0, 800, 600)
+    chart.container('container')
+    chart.draw()
 
-
-
-    var chart = anychart.pie([
-        ["Chocolate", 5],
-        ["Rhubarb compote", 2],
-        ["Crêpe Suzette", 2],
-        ["American blueberry", 2],
-        ["Buttermilk", 1]
-    ]);
-    chart.title("Top 5 pancake fillings");
-    // set the container where chart will be drawn
-    chart.container("container");
-    //  draw the chart on the page
-    chart.draw();
-
-
-
-
-    return await new Promise((resolve,reject) => anychartExport.exportTo(chart, 'png').then((image) => {
-        fs.writeFile(`./bot/images/chart.png`, image, (fsWriteError) => {
+    return await new Promise((resolve,reject) => anychartExport.exportTo(chart, 'pdf').then((image) => {
+        fs.writeFile(`./bot/images/chart.pdf`, image, (fsWriteError) => {
             if (fsWriteError) {
                 reject(fsWriteError)
             } else {

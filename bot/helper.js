@@ -124,14 +124,18 @@ const getMarketData = () => {
     }
 }
 
+const formatNumber = (number, precision) => {
+    return parseFloat(number).toFixed(typeof precision !== 'undefined' ? precision : 2)
+}
+
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
     console.log('Formatting slackpost')
     const symbol = coin.symbol
     const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : 'coincap'
     const coinComparedImage = emojiList && percentageCoin && percentageCoin.symbol && percentageCoin.symbol.toLowerCase() in emojiList ? percentageCoin.symbol : percentageCoin ? 'coincap' : 'btc'
     const priceFiat = coin.price.toFixed(2)
-    const perc = percentageCoin ? parseFloat(coin.perc - percentageCoin.perc).toFixed(2) : parseFloat(coin.perc).toFixed(2)
-    const percPrice = percentageCoin ? parseFloat(coin.price / percentageCoin.price).toFixed(precision) : btcPrice ? parseFloat(coin.price / btcPrice).toFixed(precision) : 0
+    const perc = percentageCoin ? formatNumber(coin.perc - percentageCoin.perc) : formatNumber(coin.perc)
+    const percPrice = percentageCoin ? formatNumber(coin.price / percentageCoin.price, precision) : btcPrice ? formatNumber(coin.price / btcPrice, precision) : 0
     const flavorImage = getPercentageImage(perc)
     return `${symbol} :${coinImage}: $${priceFiat} :${coinComparedImage}: ${percPrice} ${flavorImage} ${perc}%`
 }
@@ -200,6 +204,26 @@ const getTime = (time) => {
     }
 }
 
+export const displayTop = async (limit, sort) => {
+    console.log('Display top ' + limit, sort)
+    if(typeof limit === 'undefined'){
+        limit = 10
+    }
+    if(isNaN(limit)){
+        const limitHolder = limit
+        limit = sort
+        sort = limitHolder
+    }
+    const topResponse = await request.get(`${baseUrlCC}${getCoinCC}?limit=${limit}`).catch(err => new Error(err))
+    const topData = formatCoins(JSON.parse(topResponse).data)
+    let messageString = ''
+    topData.forEach((coin, i) => {
+        messageString += `#${i+1} :${coin.symbol}: ${coin.name} $${formatNumber(coin.price)}\n`
+    })
+    bot.postMessage(s3.channel, messageString, params)
+
+}
+
 export const showChart = async (coin, time, baseCoin) => {
     console.log('Show chart', coin)
     const isBitcoin = coin.toLowerCase() === 'btc'
@@ -216,7 +240,7 @@ export const showChart = async (coin, time, baseCoin) => {
     let btcGraph
     if (!isBitcoin || typeof baseCoin !== 'undefined') {
         console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin.toUpperCase() : "BTC"}&limit=${timeData.limit}`)
-        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin : "BTC"}&limit=${timeData.limit}`).catch(err => new Error(err))
+        const responseBTC = await request.get(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=${typeof baseCoin !== 'undefined' ? baseCoin.toUpperCase() : "BTC"}&limit=${timeData.limit}`).catch(err => new Error(err))
         const dataBTC = JSON.parse(responseBTC)
         btcGraph = dataBTC.Data.map((data) => {
             return [
@@ -226,7 +250,7 @@ export const showChart = async (coin, time, baseCoin) => {
         })
     }
     const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
-    if (chartBuilt) showImage('chart', 'png')
+    if (chartBuilt) showImage('chart', 'pdf')
 }
 
 export const showImage = (name, ext, channel) => {

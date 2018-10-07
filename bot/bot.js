@@ -13,6 +13,7 @@ import {
     doSomething,
     showChart,
     showHelp,
+    displayTop,
     showCoins,
     isMeme
 } from './helper'
@@ -71,6 +72,9 @@ bot.on('message', (data) => {
                     case 'chart':
                     case 'charts':
                         showChart(commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
+                        break
+                    case 'top':
+                        displayTop(commands[1], commands[2])
                         break
                     case isMeme(commands):
                         showImage(commands.join(' '), 'png')
