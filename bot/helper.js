@@ -3,12 +3,11 @@ import {
     baseUrlCMC,
     frontPageCMC,
     memes,
-    chartTimeFrame,
+    chartExtension,
     day,
     hour,
     minute,
     getCoinCMC,
-    chartPage,
     help,
     positiveInsane,
     positiveHigh,
@@ -236,7 +235,7 @@ export const showChart = async (coin, time, baseCoin) => {
     const usdGraph = dataUSD.Data.map((data) => {
         return [
             data.time * 1000,
-            data.high
+            data.close
         ]
     })
     let btcGraph
@@ -247,12 +246,12 @@ export const showChart = async (coin, time, baseCoin) => {
         btcGraph = dataBTC.Data.map((data) => {
             return [
                 data.time * 1000,
-                data.high
+                data.close
             ]
         })
     }
     const chartBuilt = await buildChart(coin, timeData, usdGraph, btcGraph)
-    if (chartBuilt) showImage('chart', 'pdf')
+    if (chartBuilt) showImage('chart', chartExtension)
 }
 
 export const showImage = (name, ext, channel) => {

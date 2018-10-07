@@ -1,20 +1,14 @@
 const fs = require('fs')
 var JSDOM = require('jsdom').JSDOM;
-// Create instance of JSDOM.
 var jsdom = new JSDOM('<body><div id="container"></div></body>', {runScripts: 'dangerously'});
-// Get window
 var window = jsdom.window;
-
-// For jsdom version 9 or lower
-// var jsdom = require('jsdom').jsdom;
-// var document = jsdom('<body><div id="container"></div></body>');
-// var window = document.defaultView;
-
-// require anychart and anychart export modules
 var anychart = require('anychart')(window);
 var anychartExport = require('anychart-nodejs')(anychart);
+import {
+    chartExtension
+} from '../config/constants'
 
-export const buildChart = async (coin, timeData, usdData, btcData) => {
+export const buildChart = async (coin, timeData, usdData, baseCoinData, baseCoin) => {
     const chart = anychart.line()
     chart.title(`${timeData.time} Day Chart For ${coin.toUpperCase()}`)
     chart.legend(true)
@@ -29,20 +23,20 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
     series1.stroke('#00cc99')
     series1.yScale(yScale1)
     series1.name('USD Price')
-    if(btcData) {
-        const btcSetArray = anychart.data.set(btcData.map((dataItem) => {
+    if(baseCoinData) {
+        const baseCoinSetArray = anychart.data.set(baseCoinData.map((dataItem) => {
             return [dataItem[0], dataItem[1]]
         }))
-        const formattedData2 = btcSetArray.mapAs({x: 0, value: 1})
+        const formattedData2 = baseCoinSetArray.mapAs({x: 0, value: 1})
         const yScale2 = anychart.scales.linear()
         const yAxis2 = chart.yAxis(1)
         yAxis2.orientation("right")
-        yAxis2.title("BTC Price")
+        yAxis2.title(`${baseCoin} Price`)
         yAxis2.scale(yScale2)
         const series2 = chart.line(formattedData2)
         series2.stroke('#FF9900')
         series2.yScale(yScale2)
-        series2.name('BTC Price')
+        series2.name(`${baseCoin} Price`)
     }
     chart.xAxis(0).labels().offsetX(-5)
     chart.xAxis(0).labels().format(function (){
@@ -57,8 +51,8 @@ export const buildChart = async (coin, timeData, usdData, btcData) => {
     chart.container('container')
     chart.draw()
 
-    return await new Promise((resolve,reject) => anychartExport.exportTo(chart, 'pdf').then((image) => {
-        fs.writeFile(`./bot/images/chart.pdf`, image, (fsWriteError) => {
+    return await new Promise((resolve,reject) => anychartExport.exportTo(chart, chartExtension).then((image) => {
+        fs.writeFile(`./bot/images/chart.${chartExtension}`, image, (fsWriteError) => {
             if (fsWriteError) {
                 reject(fsWriteError)
             } else {
