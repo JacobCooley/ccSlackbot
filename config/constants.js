@@ -1,8 +1,5 @@
 export const botName = 'Coins By Nature'
 export const chartExtension = 'png'
-export const memes = [
-    ''
-]
 export const startListening = [
     'cc',
     'cmc'
