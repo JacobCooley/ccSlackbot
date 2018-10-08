@@ -42,9 +42,11 @@ export const showCoins = async (textData, listenerString, baseCoin) => {
     if (typeof baseCoin !== 'undefined') {
         try {
             const percentCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
-            const idOrName = percentCoin.name.toLowerCase()
-            const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
-            percentageCoin = formatCoins([JSON.parse(response).data])[0]
+            if (typeof percentCoin !== 'undefined') {
+                const idOrName = percentCoin.name.toLowerCase()
+                const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
+                percentageCoin = formatCoins([JSON.parse(response).data])[0]
+            }
         }
         catch (e) {
             console.log('Symbol does not exist')
@@ -54,10 +56,12 @@ export const showCoins = async (textData, listenerString, baseCoin) => {
     let coinData = await Promise.all(uniqueValuesArray.map(async (uniqueValue) => {
         try {
             const coin = coinDataCC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase())
-            const idOrName = coin.name.toLowerCase()
-            console.log('uri', baseUrl + coinUrl + idOrName)
-            const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
-            return JSON.parse(response).data
+            if (typeof coin !== 'undefined') {
+                const idOrName = coin.name.toLowerCase()
+                console.log('uri', baseUrl + coinUrl + idOrName)
+                const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
+                return JSON.parse(response).data
+            }
         }
         catch (e) {
             console.log('Symbol does not exist')
@@ -100,7 +104,7 @@ export const formatCoins = (coinArray) => {
 function compositeImage(coinImage, isPerson) {
     gm()
         .in('-page', '+0+0')
-        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something.jpg')
+        .in(isPerson ? './bot/images/do something person.jpg' : './bot/images/do something.jpg')
         .in('-page', '+350+650')
         .in(coinImage)
         .flatten()

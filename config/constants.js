@@ -36,7 +36,7 @@ export const negativeTiny = ':downtrend:'
 export const precision = 8
 export const help =
     `   *Coinbot's help section*
-    ------------------------------------------------------------
+
     cc -- gets prices from CoinCap
     cmc -- gets prices from CoinMarketCap
     
@@ -51,10 +51,10 @@ export const help =
    
     cc chart [time] [symbol1] in [symbol2] -- Chart for [symbol1] including price compared with USD and [symbol2].
         *[time] values can be 1, 7, 30, 90, 180, and 365.  It defaults to 365*
-        *[symbol2] defaults to BTC if not specified
+        *[symbol2] defaults to BTC if not specified*
         
     cc top [limit] [sort] -- Displays top coins the the amount of [limit] in the order of [sort]
-        *[limit] will default to 10
-        *[sort] values can be ... .  It defaults to priceByMarketCap
+        *[limit] will default to 10*
+        *[sort] values can be ... .  It defaults to priceByMarketCap*
         *sort isn't implemented yet*
             `
