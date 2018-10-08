@@ -220,7 +220,7 @@ export const displayTop = async (limit, sort) => {
     const topData = formatCoins(JSON.parse(topResponse).data)
     let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol} $${formatNumber(coin.price)} ${formatNumber(coin.perc)}% 24Hr Volume=${formatNumber(coin.volume)} \n`
+        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24Hr Volume=${formatNumber(coin.volume)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
