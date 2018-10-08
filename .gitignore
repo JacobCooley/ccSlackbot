@@ -3,8 +3,6 @@ dist/
 node_modules/
 yarn.lock
 package-lock.json
-config/secrets.js
 yarn-error.log
-bot/images/*
-.gitignore
+
 
