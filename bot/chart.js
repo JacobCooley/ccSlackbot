@@ -32,14 +32,15 @@ export const buildChart = async (coin, timeData, usdData, baseCoinData, baseCoin
         const yScale2 = anychart.scales.linear()
         const yAxis2 = chart.yAxis(1)
         yAxis2.orientation("right")
-        yAxis2.title(`${baseCoin.toUpperCase()} Price`)
+        yAxis2.title(`${baseCoin.toUpperCase()} Price (in ${coin.toUpperCase()})`)
         yAxis2.scale(yScale2)
         const series2 = chart.line(formattedData2)
         series2.stroke(baseCoin.toUpperCase() in coinColors ? coinColors[baseCoin.toUpperCase()] : '#A9A9A9')
         series2.yScale(yScale2)
-        series2.name(`${baseCoin.toUpperCase()} Price`)
+        series2.name(`${baseCoin.toUpperCase()} Price (in ${coin.toUpperCase()})`)
     }
-    chart.xAxis(0).labels().offsetX(-5)
+    chart.xAxis(0).labels().offsetX(25)
+    chart.xAxis(0).labels().width(100)
     chart.xAxis(0).labels().format(function (){
         let value = this.value
         value = timeConverter(value, timeData)

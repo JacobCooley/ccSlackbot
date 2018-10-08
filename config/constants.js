@@ -1,8 +1,7 @@
 export const botName = 'Coins By Nature'
-export const chartExtension = 'png'
+export const chartExtension = 'pdf'
 export const startListening = [
-    'cc',
-    'cmc'
+    'cc'
 ]
 export const coinColors = {
     "BTC": '#FF9900',
@@ -17,13 +16,10 @@ export const coinColors = {
     "DOGE": '#e1b303'
 }
 export const baseUrlCC = 'https://api.coincap.io/v2/'
-export const baseUrlCMC = 'https://api.coinmarketcap.com/v2/'
 export const baseUrlChart = 'https://min-api.cryptocompare.com/data/'
 export const day = 'histoday'
 export const hour = 'histohour'
 export const minute = 'histominute'
-export const frontPageCMC = 'listings/'
-export const getCoinCMC = 'ticker/'
 export const getCoinCC = 'assets/'
 export const positiveMoon = ':amaze:'
 export const positiveInsane = ':amaze:'
@@ -53,10 +49,12 @@ export const help =
     cc [symbol1], [symbol2], [symbol...] -- Send in an array to get multiple values at once
         _e.g._  \`cmc btc, eth, ada\`  \`cc btc, eth, ada in eth\`
    
-    cc chart [symbol] [time] -- Chart for [symbol] including price compared with USD and BTC.
+    cc chart [time] [symbol1] in [symbol2] -- Chart for [symbol1] including price compared with USD and [symbol2].
         *[time] values can be 1, 7, 30, 90, 180, and 365.  It defaults to 365*
+        *[symbol2] defaults to BTC if not specified
         
     cc top [limit] [sort] -- Displays top coins the the amount of [limit] in the order of [sort]
         *[limit] will default to 10
         *[sort] values can be ... .  It defaults to priceByMarketCap
+        *sort isn't implemented yet*
             `

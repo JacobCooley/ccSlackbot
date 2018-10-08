@@ -1,13 +1,9 @@
 import {
     baseUrlCC,
-    baseUrlCMC,
-    frontPageCMC,
-    memes,
     chartExtension,
     day,
     hour,
     minute,
-    getCoinCMC,
     help,
     positiveInsane,
     positiveHigh,
@@ -22,10 +18,14 @@ import {
     getCoinCC,
     precision, baseUrlChart
 } from '../config/constants'
+import {
+    memes,
+    people
+} from "../config/memes";
 import bot, {s3} from './bot'
 import {buildChart} from './chart'
 
-let emojiList, coinDataCC, coinDataCMC
+let emojiList, coinDataCC
 const request = require('request-promise')
 const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
@@ -35,14 +35,14 @@ const params = {
 
 export const showCoins = async (textData, listenerString, baseCoin) => {
     console.log('Showing coins')
-    const baseUrl = listenerString === 'cc' ? baseUrlCC : baseUrlCMC
-    const coinUrl = listenerString === 'cc' ? getCoinCC : getCoinCMC
+    const baseUrl = baseUrlCC
+    const coinUrl = getCoinCC
     let percentageCoin
     const coinArray = textData.trim().split(',')
     if (typeof baseCoin !== 'undefined') {
         try {
-            const percentCoin = coinDataCMC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
-            const idOrName = listenerString === 'cc' ? percentCoin.name.toLowerCase() : percentCoin.id
+            const percentCoin = coinDataCC.find((coin) => coin.symbol.toLowerCase() === baseCoin.toLowerCase())
+            const idOrName = percentCoin.name.toLowerCase()
             const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
             percentageCoin = formatCoins([JSON.parse(response).data])[0]
         }
@@ -53,8 +53,8 @@ export const showCoins = async (textData, listenerString, baseCoin) => {
     const uniqueValuesArray = coinArray.filter((value, index, self) => self.indexOf(value === index));
     let coinData = await Promise.all(uniqueValuesArray.map(async (uniqueValue) => {
         try {
-            const coin = coinDataCMC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase())
-            const idOrName = listenerString === 'cc' ? coin.name.toLowerCase() : coin.id
+            const coin = coinDataCC.find((cmcCoin) => uniqueValue.trim().toLowerCase() === cmcCoin.symbol.toLowerCase())
+            const idOrName = coin.name.toLowerCase()
             console.log('uri', baseUrl + coinUrl + idOrName)
             const response = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
             return JSON.parse(response).data
@@ -64,10 +64,10 @@ export const showCoins = async (textData, listenerString, baseCoin) => {
         }
     }))
     coinData = formatCoins(coinData)
-    const btcCoin = coinDataCMC.find(coin => (coin.symbol.toLowerCase() === 'btc'))
-    const idOrName = listenerString === 'cc' ? btcCoin.name.toLowerCase() : btcCoin.id
+    const btcCoin = coinDataCC.find(coin => (coin.symbol.toLowerCase() === 'btc'))
+    const idOrName = btcCoin.name.toLowerCase()
     const btcData = await request.get(baseUrl + coinUrl + idOrName).catch(err => new Error(err))
-    const btcPrice = listenerString === 'cc' ? JSON.parse(btcData).data.priceUsd : JSON.parse(btcData).data.quotes.USD.price
+    const btcPrice = JSON.parse(btcData).data.priceUsd
     uniqueValuesArray.forEach((coinName) => {
         coinData.find((responseCoin) => {
             if (responseCoin && responseCoin.symbol && coinName.trim().toLowerCase() === responseCoin.symbol.toLowerCase()) {
@@ -79,17 +79,17 @@ export const showCoins = async (textData, listenerString, baseCoin) => {
 
 export const getFrontPage = async () => {
     console.log('Calling front page')
-    const response = await request.get(baseUrlCMC + frontPageCMC).catch(err => new Error(err))
+    const response = await request.get(baseUrlCC + getCoinCC).catch(err => new Error(err))
     const parsedResponse = JSON.parse(response)
-    coinDataCMC = parsedResponse.data
+    coinDataCC = parsedResponse.data
 }
 
 export const formatCoins = (coinArray) => {
     return coinArray.map((coin) => {
         return coin ? {
             symbol: coin.symbol,
-            price: coin.priceUsd ? parseFloat(coin.priceUsd) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.price : 0,
-            perc: coin.changePercent24Hr ? parseFloat(coin.changePercent24Hr) : coin.quotes && coin.quotes.USD ? coin.quotes.USD.percent_change_24h : 0,
+            price: coin.priceUsd ? parseFloat(coin.priceUsd) : 0,
+            perc: coin.changePercent24Hr ? parseFloat(coin.changePercent24Hr) : 0,
             name: coin.name,
             supply: coin.supply ? coin.supply : 0,
             volume: coin.volumeUsd24Hr ? coin.volumeUsd24Hr : 0
@@ -97,16 +97,16 @@ export const formatCoins = (coinArray) => {
     })
 }
 
-function compositeImage(coinImage, channel) {
+function compositeImage(coinImage, isPerson) {
     gm()
         .in('-page', '+0+0')
-        .in('./bot/images/do something.jpg')
-        .in('-page', '+380+600')
+        .in(isPerson ? './bot/images/do something person.jpg' :'./bot/images/do something.jpg')
+        .in('-page', '+350+650')
         .in(coinImage)
         .flatten()
         .write('./bot/images/cmon do something.jpg', function (err) {
             if (err) console.log(err)
-            else showImage('cmon do something', 'jpg', channel)
+            else showImage('cmon do something', 'jpg')
         });
 }
 
@@ -226,8 +226,13 @@ export const displayTop = async (limit, sort) => {
 
 }
 
-export const showChart = async (coin, time, baseCoin) => {
+export const showChart = async (time, coin, baseCoin) => {
     console.log('Show chart', coin)
+    if (isNaN(time)) {
+        const timeHolder = time
+        time = coin
+        coin = timeHolder
+    }
     const isBitcoin = coin.toLowerCase() === 'btc'
     const timeData = getTime(time)
     console.log(`${baseUrlChart}${timeData.day}?fsym=${coin.toUpperCase()}&tsym=USD&limit=${timeData.limit}`)
