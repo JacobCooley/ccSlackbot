@@ -23,7 +23,10 @@ import {
     people
 } from "../config/memes";
 import bot, {s3} from './bot'
-import {buildChart} from './chart'
+import {
+    buildBasicChart,
+    buildAnalysisChart
+} from './chart'
 
 let emojiList, coinDataCC
 const request = require('request-promise')
@@ -230,8 +233,8 @@ export const displayTop = async (limit, sort) => {
 
 }
 
-export const showChart = async (time, coin, baseCoin) => {
-    console.log('Show chart', coin)
+export const showChart = async (isTA, time, coin, baseCoin) => {
+    console.log('Show chart')
     if (isNaN(time)) {
         const timeHolder = time
         time = coin
@@ -244,10 +247,13 @@ export const showChart = async (time, coin, baseCoin) => {
     const dataUSD = JSON.parse(responseUSD)
     if (dataUSD.Data.length !== 0) {
         const usdGraph = dataUSD.Data.map((data) => {
-            return [
-                data.time * 1000,
-                data.close
-            ]
+            return {
+                x: data.time * 1000,
+                c: data.close,
+                o: data.open,
+                h: data.high,
+                l: data.low
+        }
         })
         let baseGraph
         if (!isBitcoin && typeof baseCoin === 'undefined') {
@@ -259,14 +265,17 @@ export const showChart = async (time, coin, baseCoin) => {
             const dataBase = JSON.parse(responseBase)
             if (dataBase.Data.length !== 0) {
                 baseGraph = dataBase.Data.map((data) => {
-                    return [
-                        data.time * 1000,
-                        data.close
-                    ]
+                    return {
+                        x: data.time * 1000,
+                        c: data.close,
+                        o: data.open,
+                        h: data.high,
+                        l: data.low
+                    }
                 })
             }
         }
-        const chartBuilt = await buildChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+        const chartBuilt = isTA ? await buildAnalysisChart(coin, timeData, usdGraph, baseGraph, baseCoin) : await buildBasicChart(coin, timeData, usdGraph, baseGraph, baseCoin)
         if (chartBuilt) showImage('chart', chartExtension)
     }
 }

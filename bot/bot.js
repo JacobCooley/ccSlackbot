@@ -71,7 +71,10 @@ bot.on('message', (data) => {
                         break
                     case 'chart':
                     case 'charts':
-                        showChart(commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
+                        showChart(false, commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
+                        break
+                    case 'ta':
+                        showChart(true, commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
                         break
                     case 'top':
                         displayTop(commands[1], commands[2])
