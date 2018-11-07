@@ -1,10 +1,4 @@
 import {
-    baseUrlCC,
-    chartExtension,
-    day,
-    hour,
-    minute,
-    help,
     positiveInsane,
     positiveHigh,
     positiveMed,
@@ -14,16 +8,26 @@ import {
     negativeHigh,
     negativeMed,
     negativeLow,
-    negativeTiny,
-    getCoinCC,
-    precision, baseUrlChart
+    negativeTiny
 } from '../config/constants'
 import {
-    memes,
-    people
+    baseUrlCC,
+    chartExtension,
+    day,
+    hour,
+    minute,
+    help,
+    getCoinCC,
+    precision, baseUrlChart
+} from '../config/app-constants'
+import {
+    memes
 } from "../config/memes";
 import bot, {s3} from './bot'
-import {buildChart} from './chart'
+import {
+    buildBasicChart,
+    buildAnalysisChart
+} from './chart'
 
 let emojiList, coinDataCC
 const request = require('request-promise')
@@ -96,7 +100,8 @@ export const formatCoins = (coinArray) => {
             perc: coin.changePercent24Hr ? parseFloat(coin.changePercent24Hr) : 0,
             name: coin.name,
             supply: coin.supply ? coin.supply : 0,
-            volume: coin.volumeUsd24Hr ? coin.volumeUsd24Hr : 0
+            volume: coin.volumeUsd24Hr ? coin.volumeUsd24Hr : 0,
+            mktcap: coin.marketCapUsd ? coin.marketCapUsd : 0
         } : {}
     })
 }
@@ -224,14 +229,14 @@ export const displayTop = async (limit, sort) => {
     const topData = formatCoins(JSON.parse(topResponse).data)
     let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24Hr Volume=${formatNumber(coin.volume)} \n`
+        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24hrVol=$${formatNumber(coin.volume)}  |  MktCap=$${formatNumber(coin.mktcap)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
 }
 
-export const showChart = async (time, coin, baseCoin) => {
-    console.log('Show chart', coin)
+export const showChart = async (isTA, time, coin, baseCoin) => {
+    console.log('Show chart')
     if (isNaN(time)) {
         const timeHolder = time
         time = coin
@@ -244,10 +249,13 @@ export const showChart = async (time, coin, baseCoin) => {
     const dataUSD = JSON.parse(responseUSD)
     if (dataUSD.Data.length !== 0) {
         const usdGraph = dataUSD.Data.map((data) => {
-            return [
-                data.time * 1000,
-                data.close
-            ]
+            return {
+                x: data.time * 1000,
+                c: data.close,
+                o: data.open,
+                h: data.high,
+                l: data.low
+        }
         })
         let baseGraph
         if (!isBitcoin && typeof baseCoin === 'undefined') {
@@ -259,14 +267,17 @@ export const showChart = async (time, coin, baseCoin) => {
             const dataBase = JSON.parse(responseBase)
             if (dataBase.Data.length !== 0) {
                 baseGraph = dataBase.Data.map((data) => {
-                    return [
-                        data.time * 1000,
-                        data.close
-                    ]
+                    return {
+                        x: data.time * 1000,
+                        c: data.close,
+                        o: data.open,
+                        h: data.high,
+                        l: data.low
+                    }
                 })
             }
         }
-        const chartBuilt = await buildChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+        const chartBuilt = isTA ? await buildAnalysisChart(coin, timeData, usdGraph, baseGraph, baseCoin) : await buildBasicChart(coin, timeData, usdGraph, baseGraph, baseCoin)
         if (chartBuilt) showImage('chart', chartExtension)
     }
 }
@@ -287,10 +298,10 @@ export const showImage = (name, ext, channel) => {
     return request(options).catch(err => console.error(new Error(err)))
 }
 
-export const doSomething = (image, channel) => {
+export const doSomething = (image) => {
     gm(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`).resize(150, 150)
         .write(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, (err) => {
             if (err) console.log(err)
-            else compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`, channel)
+            else compositeImage(`./node_modules/cryptocurrency-icons/dist/128/color/${image}.png`)
         })
 }

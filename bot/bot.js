@@ -1,10 +1,12 @@
 const Bot = require('slackbots')
 const {setWsHeartbeat} = require('ws-heartbeat/client')
 import {
-    botName,
+    botName
+} from '../config/constants'
+import {
     startListening,
     help
-} from '../config/constants'
+} from '../config/app-constants'
 
 import {
     setFrontPageInterval,
@@ -55,7 +57,8 @@ bot.on('message', (data) => {
         const listenerString = commands.shift().toLowerCase()
         if (listenerString === 'do' && commands[0] === 'something') {
             console.log('doing something')
-            doSomething(commands[1], data.channel)
+            doSomething(commands[1])
+            return
         }
         if(commands[commands.length - 2] === 'in'){
             baseCoin = commands.pop()
@@ -71,7 +74,10 @@ bot.on('message', (data) => {
                         break
                     case 'chart':
                     case 'charts':
-                        showChart(commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
+                        showChart(false, commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
+                        break
+                    case 'ta':
+                        showChart(true, commands[1], commands[2], baseCoin).then(() => `Chart ${commands[1]} in ${baseCoin} shown`)
                         break
                     case 'top':
                         displayTop(commands[1], commands[2])
