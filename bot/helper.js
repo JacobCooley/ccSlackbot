@@ -93,7 +93,6 @@ export const getFrontPage = async () => {
 
 export const formatCoins = (coinArray) => {
     return coinArray.map((coin) => {
-        console.log('coin', coin)
         return coin ? {
             symbol: coin.symbol,
             price: coin.priceUsd ? parseFloat(coin.priceUsd) : 0,
@@ -229,7 +228,7 @@ export const displayTop = async (limit, sort) => {
     const topData = formatCoins(JSON.parse(topResponse).data)
     let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24HrVol=${formatNumber(coin.volume)}  |  MktCap=${formatNumber(coin.mktcap)} \n`
+        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24hrVol=$${formatNumber(coin.volume)}  |  MktCap=$${formatNumber(coin.mktcap)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
