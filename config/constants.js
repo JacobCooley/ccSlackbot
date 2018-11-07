@@ -41,19 +41,21 @@ export const help =
     cmc -- gets prices from CoinMarketCap
     
     cc [symbol] -- [symbol]'s price in USD and amount relative to BTC
-        _e.g._  \`cc btc\` \`cmc btc\`
+        _e.g._  \`cc btc\`
     
     cc [symbol1] in [symbol2] -- [symbol1]'s price in USD and amount relative to [symbol2]
-        _e.g._  \`cc btc in eth\` \`cmc btc in eth\`
+        _e.g._  \`cc btc in eth\`
     
     cc [symbol1], [symbol2], [symbol...] -- Send in an array to get multiple values at once
-        _e.g._  \`cmc btc, eth, ada\`  \`cc btc, eth, ada in eth\`
+        _e.g._  \`cc btc, eth, ada\`
    
     cc chart [time] [symbol1] in [symbol2] -- Chart for [symbol1] including price compared with USD and [symbol2].
+        _e.g._  \`cc chart btc in eth\`
         *[time] values can be 1, 7, 30, 90, 180, and 365.  It defaults to 365*
         *[symbol2] defaults to BTC if not specified*
         
     cc top [limit] [sort] -- Displays top coins the the amount of [limit] in the order of [sort]
+        _e.g._  \`cc top 20\`
         *[limit] will default to 10*
         *[sort] values can be ... .  It defaults to priceByMarketCap*
         *sort isn't implemented yet*
