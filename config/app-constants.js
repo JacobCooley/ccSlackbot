@@ -25,7 +25,6 @@ export const help =
     `   *Coinbot's help section*
 
     cc -- gets prices from CoinCap
-    cmc -- gets prices from CoinMarketCap
     
     cc [symbol] -- [symbol]'s price in USD and amount relative to BTC
         _e.g._  \`cc btc\`

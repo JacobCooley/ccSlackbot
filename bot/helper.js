@@ -110,7 +110,7 @@ function compositeImage(coinImage) {
     gm()
         .in('-page', '+0+0')
         .in('./bot/images/do something.jpg')
-        .in('-page', '+380+600')
+        .in('-page', '+370+600')
         .in(coinImage)
         .flatten()
         .write('./bot/images/cmon do something.jpg', function (err) {
