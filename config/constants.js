@@ -1,5 +1,5 @@
 export const botName = 'Coins By Nature'
-export const chartExtension = 'pdf'
+export const chartExtension = 'jpg'
 export const startListening = [
     'cc'
 ]
