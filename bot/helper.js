@@ -229,7 +229,7 @@ export const displayTop = async (limit, sort) => {
     const topData = formatCoins(JSON.parse(topResponse).data)
     let messageString = `Top ${limit} Coins\n`
     topData.forEach((coin, i) => {
-        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24hrVol=$${formatNumber(coin.volume)}  |  MktCap=$${formatNumber(coin.mktcap)} \n`
+        messageString += `#${i + 1} :${coin.symbol}: ${coin.symbol}  |  $${formatNumber(coin.price)}  |  ${formatNumber(coin.perc)}%  |  24hrVol=$${numberWithCommas(formatNumber(coin.volume), 2)}  |  MktCap=$${numberWithCommas(formatNumber(coin.mktcap), 2)} \n`
     })
     bot.postMessage(s3.channel, messageString, params)
 
@@ -296,6 +296,26 @@ export const showImage = (name, ext, channel) => {
         }
     }
     return request(options).catch(err => console.error(new Error(err)))
+}
+
+const numberWithCommas = (num, digits) => {
+    const si = [
+        { value: 1, symbol: "" },
+        { value: 1E3, symbol: "k" },
+        { value: 1E6, symbol: "M" },
+        { value: 1E9, symbol: "B" },
+        { value: 1E12, symbol: "T" },
+        { value: 1E15, symbol: "P" },
+        { value: 1E18, symbol: "E" }
+    ];
+    const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+    let i;
+    for (i = si.length - 1; i > 0; i--) {
+        if (num >= si[i].value) {
+            break;
+        }
+    }
+    return (num / si[i].value).toFixed(digits).replace(rx, "$1") + si[i].symbol;
 }
 
 export const doSomething = (image) => {
