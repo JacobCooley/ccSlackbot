@@ -4,7 +4,7 @@ node_modules/
 yarn.lock
 package-lock.json
 yarn-error.log
-bot/images/*
+bot/images/
 config/constants.js
 config/memes.js
 .gitignore
