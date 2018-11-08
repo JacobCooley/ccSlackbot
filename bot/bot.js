@@ -16,6 +16,7 @@ import {
     showChart,
     showHelp,
     displayTop,
+    pingSite,
     showCoins,
     isMeme
 } from './helper'
@@ -40,6 +41,7 @@ bot.on('start', (data) => {
     console.log("Bot started")
     setFrontPageInterval()
     setCorrectChannel()
+	pingSite()
     getEmojiList()
     console.log("Listening on channel " + s3.channel)
 })

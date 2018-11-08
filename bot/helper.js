@@ -37,6 +37,12 @@ const params = {
     icon_emoji: ':ideas_by_nature:'
 }
 
+export const pingSite = async () => {
+	setInterval(async () => {
+		await request.get("http://polar-harbor-81506.herokuapp.com").catch(err => new Error(err))
+	}, 150000)
+}
+
 export const showCoins = async (textData, listenerString, baseCoin) => {
     console.log('Showing coins')
     const baseUrl = baseUrlCC
