@@ -202,8 +202,8 @@ const getTime = (time) => {
         case '90':
             return {
                 time: 90,
-                day: hour,
-                limit: 90 * 24
+                day: day,
+                limit: 90
             }
         case '180':
             return {
