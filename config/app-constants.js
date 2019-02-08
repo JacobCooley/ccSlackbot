@@ -16,6 +16,7 @@ export const coinColors = {
 }
 export const baseUrlCC = 'https://api.coincap.io/v2/'
 export const baseUrlChart = 'https://min-api.cryptocompare.com/data/'
+export const missingCoin = 'missing-coin'
 export const day = 'histoday'
 export const hour = 'histohour'
 export const minute = 'histominute'
@@ -26,7 +27,7 @@ export const help =
 
     cc -- gets prices from CoinCap
     
-    cc [symbol] -- [symbol]'s price in USD and amount relative to BTC
+    cc [symbol] -- [symbol]'s price in USD and amount relative to BTC followed by 24 hour percent change
         _e.g._  \`cc btc\`
     
     cc [symbol1] in [symbol2] -- [symbol1]'s price in USD and amount relative to [symbol2]
@@ -36,7 +37,7 @@ export const help =
         _e.g._  \`cc btc, eth, ada\`
    
     cc chart [time] [symbol1] in [symbol2] -- Chart for [symbol1] including price compared with USD and [symbol2].
-        _e.g._  \`cc chart btc in eth\`
+        _e.g._  \`cc chart 365 btc in eth\`
         *[time] values can be 1, 7, 30, 90, 180, and 365.  It defaults to 365*
         *[symbol2] defaults to BTC if not specified*
         

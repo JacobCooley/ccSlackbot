@@ -18,7 +18,7 @@ import {
     minute,
     help,
     getCoinCC,
-    precision, baseUrlChart
+    precision, baseUrlChart, missingCoin
 } from '../config/app-constants'
 import {
     memes
@@ -34,7 +34,7 @@ const request = require('request-promise')
 const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
 const params = {
-    icon_emoji: ':ideas_by_nature:'
+    icon_emoji: ':btc:'
 }
 
 export const pingSite = async () => {
@@ -96,6 +96,7 @@ export const getFrontPage = async () => {
     const response = await request.get(baseUrlCC + getCoinCC).catch(err => new Error(err))
     const parsedResponse = JSON.parse(response)
     coinDataCC = parsedResponse.data
+    return coinDataCC
 }
 
 export const formatCoins = (coinArray) => {
@@ -148,8 +149,8 @@ const formatNumber = (number, precision) => {
 const formatSlackPost = (coin, percentageCoin, btcPrice) => {
     console.log('Formatting slackpost')
     const symbol = coin.symbol
-    const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : 'coincap'
-    const coinComparedImage = emojiList && percentageCoin && percentageCoin.symbol && percentageCoin.symbol.toLowerCase() in emojiList ? percentageCoin.symbol : percentageCoin ? 'coincap' : 'btc'
+    const coinImage = emojiList && coin.symbol.toLowerCase() in emojiList ? coin.symbol : missingCoin
+    const coinComparedImage = emojiList && percentageCoin && percentageCoin.symbol && percentageCoin.symbol.toLowerCase() in emojiList ? percentageCoin.symbol : percentageCoin ? missingCoin : 'btc'
     const priceFiat = coin.price.toFixed(2)
     const perc = percentageCoin ? formatNumber(coin.perc - percentageCoin.perc) : formatNumber(coin.perc)
     const percPrice = percentageCoin ? formatNumber(coin.price / percentageCoin.price, precision) : btcPrice ? formatNumber(coin.price / btcPrice, precision) : 0
@@ -161,6 +162,7 @@ export const getEmojiList = async () => {
     console.log('Getting emojis')
     const response = await request.get(`https://slack.com/api/emoji.list?token=${s3.oauthToken}`).catch(err => console.log(new Error(err)))
     emojiList = JSON.parse(response).emoji
+    return emojiList
 }
 
 const getPercentageImage = (perc) => {
@@ -283,7 +285,12 @@ export const showChart = async (isTA, time, coin, baseCoin) => {
                 })
             }
         }
-        const chartBuilt = isTA ? await buildAnalysisChart(coin, timeData, usdGraph, baseGraph, baseCoin) : await buildBasicChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+        const chartBuilt =
+          isTA ?
+          await buildAnalysisChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+          :
+          await buildBasicChart(coin, timeData, usdGraph, baseGraph, baseCoin)
+        
         if (chartBuilt) showImage('chart', chartExtension)
     }
 }

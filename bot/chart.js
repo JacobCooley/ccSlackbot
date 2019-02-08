@@ -11,7 +11,7 @@ import {
 
 export const buildAnalysisChart = async (coin, timeData, usdData, baseCoinData, baseCoin) => {
     const chart = anychart.stock()
-    console.log('usda', usdData)
+    console.log('usdanalysis', usdData)
     var table = anychart.data.table('x');
     table.addData(usdData);
     var mapping = table.mapAs({'open':"o",'high': "h", 'low':"l", 'close':"c"});
@@ -66,6 +66,7 @@ export const buildBasicChart = async (coin, timeData, usdData, baseCoinData, bas
         return[dataItem.x, dataItem.c]
     }))
     const formattedData = usdSetArray.mapAs({x: 0, value: 1})
+    chart.xScale().ticks(1000)
     const yScale1 = anychart.scales.linear()
     chart.yAxis(0).title("USD Price")
     chart.yAxis(0).scale(yScale1)
@@ -77,7 +78,7 @@ export const buildBasicChart = async (coin, timeData, usdData, baseCoinData, bas
         const baseCoinSetArray = anychart.data.set(baseCoinData.map((dataItem) => {
             return [dataItem.x, dataItem.c]
         }))
-        const formattedData2 = baseCoinSetArray.mapAs({x: 0, value: 1})
+        const formattedData2 = baseCoinSetArray.mapAs({ x: 0, value: 1 })
         const yScale2 = anychart.scales.linear()
         const yAxis2 = chart.yAxis(1)
         yAxis2.orientation("right")
@@ -88,8 +89,6 @@ export const buildBasicChart = async (coin, timeData, usdData, baseCoinData, bas
         series2.yScale(yScale2)
         series2.name(`${baseCoin.toUpperCase()} Price (in ${coin.toUpperCase()})`)
     }
-    chart.xAxis(0).labels().offsetX(25)
-    chart.xAxis(0).labels().width(100)
     chart.xAxis(0).labels().format(function (){
         let value = this.value
         value = timeConverter(value, timeData)
