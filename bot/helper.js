@@ -34,7 +34,7 @@ const request = require('request-promise')
 const fs = require('fs')
 const gm = require('gm').subClass({imageMagick: true})
 const params = {
-    icon_emoji: ':btc:'
+    icon_emoji: ':savvy:'
 }
 
 export const pingSite = async () => {
